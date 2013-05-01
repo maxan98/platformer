@@ -2,15 +2,15 @@ public class Player extends Entity {
     private float maxSpeed = 250;
     private float jumpImpulse = 350;
 
-    public Player(int x, int y) {
-        super("./assets/sprites/player.png", x, y);
+    public Player(Tiles tiles, int x, int y) {
+        super(tiles, "./assets/sprites/player.png", x, y);
         this.gravityAffected = true;
         this.acceleration = 750;
     }
 
 
-    public void handleInput(Tiles tiles, InputListener input) {
-        boolean currentlyOnGround = onGround(tiles);
+    public void handleInput(InputListener input) {
+        boolean currentlyOnGround = onGround();
         
         if (input.leftPressed() && !input.rightPressed()) {
             targetDx = -1 * maxSpeed;

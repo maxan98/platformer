@@ -11,20 +11,22 @@ public class Entity {
     protected float acceleration;
 
     protected Sprite sprite;
+    protected Tiles tiles;
 
     protected boolean gravityAffected;
 
     private final float terminalVelocity = 1000; // Gravitational constant
 
-    public Entity(String graphics_ref, int x, int y) {
+    public Entity(Tiles tiles, String graphics_ref, int x, int y) {
         this.sprite = SpriteStore.get().getSprite(graphics_ref);
         this.x = x;
         this.y = y;
         this.xBound = sprite.getWidth();
         this.yBound = sprite.getHeight();
+        this.tiles = tiles;
     }
 
-    public void move(Tiles tiles, long delta) {
+    public void move(long delta) {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);
         int jMin = tiles.pixToTile(y);
@@ -56,7 +58,6 @@ public class Entity {
                 deltaX = (float) distanceToObstacle;
                 dx = 0;
             }
-
         } else if (deltaX < 0) {
             int i = iMin - 1;
             while (i >= 0) {
@@ -124,7 +125,7 @@ public class Entity {
         yRemainder = deltaY - (int) deltaY;
     }
 
-    protected boolean onGround(Tiles tiles) {
+    protected boolean onGround() {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);
         int jBelowFeet = tiles.pixToTile(y + yBound);
@@ -138,8 +139,8 @@ public class Entity {
     }
 
 
-    public void updatePhysics(Tiles tiles, long delta) {
-        boolean onGround = onGround(tiles);
+    public void updatePhysics(long delta) {
+        boolean onGround = onGround();
 
         if (gravityAffected && !onGround) {
             targetDy = terminalVelocity;

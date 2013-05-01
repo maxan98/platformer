@@ -9,6 +9,7 @@ public class Game extends Canvas {
     Tiles tiles;
     InputListener input;
     Player player;
+    Editor editor;
 
     public Game(GraphicsDevice device) {
         
@@ -34,8 +35,6 @@ public class Game extends Canvas {
         bf = getBufferStrategy();
 
         // Set up game world
-        player = new Player(50,50);
-
         tiles = new Tiles(25, 18, 32);
         for (int i = 0; i < tiles.getWidth(); i++) {
             for (int j = 0; j < tiles.getWidth(); j++) {
@@ -48,24 +47,23 @@ public class Game extends Canvas {
             }
         }
 
+        player = new Player(tiles, 50,50);
+
         // Set up input listeners
         input = new InputListener(this);
+        
+        // Set up the world editor
+        editor = new Editor(tiles);
     }
 
     public void handleInput() {
-        if (input.mouseDown()) {
-            int x = input.getMouseX();
-            int y = input.getMouseY();
-            tiles.setTile(tiles.pixToTile(x), tiles.pixToTile(y),
-                          "./assets/tiles/block.png", true);
-        }
-
-        player.handleInput(tiles, input);
+        editor.handleInput(input);
+        player.handleInput(input);
     }
 
     public void update(long delta) {
-        player.updatePhysics(tiles, delta);
-        player.move(tiles, delta);
+        player.updatePhysics(delta);
+        player.move(delta);
     }
 
     public void draw() {

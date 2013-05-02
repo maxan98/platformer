@@ -26,6 +26,14 @@ public class Entity {
         this.tiles = tiles;
     }
 
+    public int getCenterX() {
+        return this.x + (this.xBound / 2);
+    }
+
+    public int getCenterY() {
+        return this.y + (this.yBound / 2);
+    }
+
     public void move(long delta) {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);

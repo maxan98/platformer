@@ -1,18 +1,23 @@
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class Game extends Canvas {
     BufferStrategy bf;
+    int xSize, ySize;
     int xRes, yRes;
     Tiles tiles;
     InputListener input;
     Player player;
     Editor editor;
+    BufferedImage render;
+    Camera camera;
 
     public Game(GraphicsDevice device) {
-        
+        this.xSize = 50*32;
+        this.ySize = 36*32;
         this.xRes = 25*32;
         this.yRes = 18*32;
         
@@ -34,8 +39,16 @@ public class Game extends Canvas {
         createBufferStrategy(2);            
         bf = getBufferStrategy();
 
+        // Set up the render. We draw to the render, which is then clipped
+        // by the camera and drawn to the screen
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        render = gc.createCompatibleImage(xSize, ySize,
+                                          Transparency.BITMASK);
+        
+        camera = new Camera(xRes, yRes);
+
         // Set up game world
-        tiles = new Tiles(25, 18, 32);
+        tiles = new Tiles(50, 36, 32);
         for (int i = 0; i < tiles.getWidth(); i++) {
             for (int j = 0; j < tiles.getWidth(); j++) {
                 if (i == 0 || i == tiles.getWidth() - 1 
@@ -57,24 +70,26 @@ public class Game extends Canvas {
     }
 
     public void handleInput() {
-        editor.handleInput(input);
+        editor.handleInput(input, camera);
         player.handleInput(input);
     }
 
     public void update(long delta) {
         player.updatePhysics(delta);
         player.move(delta);
+        camera.update(player, tiles);
     }
 
     public void draw() {
+        Graphics gRender = render.getGraphics();
+        tiles.draw(gRender);
+        player.draw(gRender);
+        
         Graphics g = null;
         
         try {
             g = bf.getDrawGraphics();
-
-            tiles.draw(g);
-            player.draw(g);
-            
+            camera.render(g, render);
         } finally {
             g.dispose();
         }

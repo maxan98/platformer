@@ -13,10 +13,10 @@ public class Editor {
         this.lastEditY = -1;
     }
 
-    public void handleInput(InputListener input) {
+    public void handleInput(InputListener input, Camera camera) {
         if (input.mouseDown()) {
-            int x = tiles.pixToTile(input.getMouseX());
-            int y = tiles.pixToTile(input.getMouseY());
+            int x = tiles.pixToTile(camera.cameraToGlobalX(input.getMouseX()));
+            int y = tiles.pixToTile(camera.cameraToGlobalY(input.getMouseY()));
             if (x != lastEditX || y != lastEditY
                 || System.currentTimeMillis() - lastEdit > minTimeBetweenEdits) {
                 if (tiles.isSolid(x, y)) {

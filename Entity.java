@@ -8,12 +8,14 @@ public class Entity {
     protected float xRemainder, yRemainder;
     protected float targetDx, targetDy;
     protected float dx, dy;
-    protected float acceleration;
+    protected float xAcceleration;
+    protected float yAcceleration;
 
     protected Sprite sprite;
     protected Tiles tiles;
 
     protected boolean gravityAffected;
+    protected int facing; // positive if facing right, negative otherwise
 
     private final float terminalVelocity = 1000; // Gravitational constant
 
@@ -24,6 +26,7 @@ public class Entity {
         this.xBound = sprite.getWidth();
         this.yBound = sprite.getHeight();
         this.tiles = tiles;
+        this.facing = 1;
     }
 
     public int getCenterX() {
@@ -32,6 +35,10 @@ public class Entity {
 
     public int getCenterY() {
         return this.y + (this.yBound / 2);
+    }
+    
+    public int getFacing() {
+        return this.facing;
     }
 
     public void move(long delta) {
@@ -46,10 +53,14 @@ public class Entity {
             }
         }
 
-        float deltaX = (delta * dx) / 1000;
+        float deltaX = ((float) (delta * dx)) / 1000;
+        if (deltaX > 0) {
+            facing = 1;
+        } else if (deltaX < 0) {
+            facing = -1;
+        }
 
         // For each line the bounding box intersects, scan for an obstacle
-
         if (deltaX > 0) {
             int i = iMax + 1;
             while (i < tiles.getWidth()) {
@@ -60,7 +71,7 @@ public class Entity {
                 if (j <= jMax) break;
                 i++;
             }
-            
+
             int distanceToObstacle = tiles.tileToPix(i) - (x + xBound);
             if (distanceToObstacle < deltaX) {
                 deltaX = (float) distanceToObstacle;
@@ -91,7 +102,7 @@ public class Entity {
         iMin = tiles.pixToTile((int) x);
         iMax = tiles.pixToTile((int) x + xBound - 1);
 
-        float deltaY = (delta * dy) / 1000;
+        float deltaY = ((float) (delta * dy)) / 1000;
 
         if (deltaY > 0) {
             int j = jMax + 1;
@@ -133,7 +144,7 @@ public class Entity {
         yRemainder = deltaY - (int) deltaY;
     }
 
-    protected boolean onGround() {
+    public boolean onGround() {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);
         int jBelowFeet = tiles.pixToTile(y + yBound);
@@ -156,28 +167,28 @@ public class Entity {
 
         if (dx < targetDx) {
             if (onGround) {
-                dx += acceleration * delta / 1000;
+                dx += xAcceleration * delta / 1000;
             } else {
-                dx += 0.5 * acceleration * delta / 1000;
+                dx += 0.5 * xAcceleration * delta / 1000;
             }
 
             if (dx > targetDx) dx = targetDx;
 
         } else if (dx > targetDx) {
             if (onGround) {
-                dx -= acceleration * delta / 1000;
+                dx -= xAcceleration * delta / 1000;
             } else {
-                dx -= 0.5 * acceleration * delta / 1000;
+                dx -= 0.5 * xAcceleration * delta / 1000;
             }
 
             if (dx < targetDx) dx = targetDx;
         }
 
         if (dy < targetDy) {
-            dy += acceleration * delta / 1000;
+            dy += yAcceleration * delta / 1000;
             if (dy > targetDy) dy = targetDy;
         } else if (dy > targetDy) {
-            dy -= acceleration * delta / 1000;
+            dy -= yAcceleration * delta / 1000;
             if (dy < targetDy) dy = targetDy;
         }
     }

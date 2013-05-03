@@ -16,8 +16,8 @@ public class Game extends Canvas {
     Camera camera;
 
     public Game(GraphicsDevice device) {
-        this.xSize = 50*32;
-        this.ySize = 36*32;
+        this.xSize = 80*32;
+        this.ySize = 50*32;
         this.xRes = 25*32;
         this.yRes = 18*32;
         
@@ -45,7 +45,7 @@ public class Game extends Canvas {
         render = gc.createCompatibleImage(xSize, ySize,
                                           Transparency.BITMASK);
         
-        camera = new Camera(xRes, yRes);
+        camera = new Camera(xRes, yRes, 0, 0, Camera.SMART);
 
         // Set up game world
         tiles = new Tiles(50, 36, 32);
@@ -69,15 +69,15 @@ public class Game extends Canvas {
         editor = new Editor(tiles);
     }
 
-    public void handleInput() {
+    public void handleInput(long delta) {
         editor.handleInput(input, camera);
-        player.handleInput(input);
+        player.handleInput(input, delta);
     }
 
     public void update(long delta) {
         player.updatePhysics(delta);
         player.move(delta);
-        camera.update(player, tiles);
+        camera.update(player, tiles, delta);
     }
 
     public void draw() {
@@ -115,14 +115,14 @@ public class Game extends Canvas {
     }
 
     public static void loop() {
-        long millisecondsPerFrame = 1;
+        long millisecondsPerFrame = 10;
         long beginningTime;
         long endTime;
         long lastFrameTime = millisecondsPerFrame;
         for ( ; ; ) {
             beginningTime = System.currentTimeMillis();
             
-            game.handleInput();
+            game.handleInput(lastFrameTime);
             game.update(lastFrameTime);
             game.draw();
             

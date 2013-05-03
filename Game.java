@@ -15,11 +15,11 @@ public class Game extends Canvas {
     BufferedImage render;
     Camera camera;
 
-    public Game(GraphicsDevice device) {
-        this.xSize = 80*32;
-        this.ySize = 50*32;
-        this.xRes = 25*32;
-        this.yRes = 18*32;
+    public Game(GraphicsDevice device, int xTiles, int yTiles) {
+        this.xSize = xTiles * 16;
+        this.ySize = yTiles * 16;
+        this.xRes = 50*16;
+        this.yRes = 36*16;
         
         JFrame container = new JFrame("Game");
         container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -48,7 +48,7 @@ public class Game extends Canvas {
         camera = new Camera(xRes, yRes, 0, 0, Camera.SMART);
 
         // Set up game world
-        tiles = new Tiles(50, 36, 32);
+        tiles = new Tiles(xTiles, yTiles, 16);
         for (int i = 0; i < tiles.getWidth(); i++) {
             for (int j = 0; j < tiles.getWidth(); j++) {
                 if (i == 0 || i == tiles.getWidth() - 1 
@@ -102,7 +102,7 @@ public class Game extends Canvas {
     public static void init() {
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = env.getDefaultScreenDevice();
-        game = new Game(device);
+        game = new Game(device, 80, 50);
 
         Thread loop = new Thread()
             {

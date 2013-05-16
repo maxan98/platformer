@@ -1,0 +1,18 @@
+16
+background false
+block true
+0_100_slope true
+0_50_slope true
+50_100_slope true
+0_25_slope true
+25_50_slope true
+50_75_slope true 
+75_100_slope true
+100_0_slope true
+100_50_slope true
+50_0_slope true
+100_75_slope true
+75_50_slope true 
+50_25_slope true
+25_0_slope true
+  

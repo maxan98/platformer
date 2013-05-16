@@ -17,7 +17,7 @@ public class Entity {
     protected boolean gravityAffected;
     protected int facing; // positive if facing right, negative otherwise
 
-    private final float terminalVelocity = 1000; // Gravitational constant
+    private final float terminalVelocity = 500; // Gravitational constant
 
     public Entity(Tiles tiles, String graphics_ref, int x, int y) {
         this.sprite = SpriteStore.get().getSprite(graphics_ref);

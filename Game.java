@@ -12,6 +12,7 @@ public class Game extends Canvas {
     InputListener input;
     Player player;
     Editor editor;
+    boolean editorActive;
     BufferedImage render;
     Camera camera;
 
@@ -48,14 +49,14 @@ public class Game extends Canvas {
         camera = new Camera(xRes, yRes, 0, 0, Camera.SMART);
 
         // Set up game world
-        tiles = new Tiles(xTiles, yTiles, 16);
+        tiles = new Tiles(xTiles, yTiles, 16, "./assets/tilesets/default.txt");
         for (int i = 0; i < tiles.getWidth(); i++) {
             for (int j = 0; j < tiles.getWidth(); j++) {
                 if (i == 0 || i == tiles.getWidth() - 1 
                     || j == 0 || j == tiles.getHeight() - 1) {
-                    tiles.setTile(i, j, "./assets/tiles/block.png", true);
+                    tiles.setTile(i, j, 1);
                 } else {
-                    tiles.setTile(i, j, "./assets/tiles/background.png", false);
+                    tiles.setTile(i, j, 0);
                 }
             }
         }
@@ -70,13 +71,26 @@ public class Game extends Canvas {
     }
 
     public void handleInput(long delta) {
-        editor.handleInput(input, camera);
-        player.handleInput(input, delta);
+        if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
+            editorActive = !editorActive;
+            input.clearAllKeysTyped();
+        }
+
+        if (editorActive) {
+            editor.handleInput(input, camera);
+        } else {
+            player.handleInput(input, delta);
+        }
     }
 
     public void update(long delta) {
-        player.updatePhysics(delta);
-        player.move(delta);
+        if (editorActive) { 
+            
+        } else {
+            player.updatePhysics(delta);
+            player.move(delta);            
+        }
+
         camera.update(player, tiles, delta);
     }
 
@@ -84,6 +98,10 @@ public class Game extends Canvas {
         Graphics gRender = render.getGraphics();
         tiles.draw(gRender);
         player.draw(gRender);
+        
+        if (editorActive) {
+            editor.draw(gRender);
+        }
         
         Graphics g = null;
         

@@ -25,15 +25,15 @@ public class Player extends Entity {
             lastGroundY = y + yBound;
         }
         
-        if (input.leftPressed() && !input.rightPressed()) {
+        if (input.isKeyDown(InputListener.LEFT) && !input.isKeyDown(InputListener.RIGHT)) {
             targetDx = -1 * maxSpeed;
-        } else if (!input.leftPressed() && input.rightPressed()) {
+        } else if (!input.isKeyDown(InputListener.LEFT) && input.isKeyDown(InputListener.RIGHT)) {
             targetDx = maxSpeed;
         } else {
             targetDx = 0;
         }
 
-        if (input.jumpPressed()) {
+        if (input.isKeyDown(InputListener.JUMP)) {
             if (currentlyOnGround) {
                 dy = -jumpImpulse;
                 hangTime = 0;

@@ -2,26 +2,17 @@ import java.awt.*;
 
 public class Tiles {
 
-    private class Tile {
-        public Sprite sprite;
-        public boolean solid;
-        public boolean dirty; // true if this tile must be redrawn
-        
-        public Tile(String graphics_ref, boolean solid) {
-            this.sprite = SpriteStore.get().getSprite(graphics_ref);
-            this.solid = solid;
-            this.dirty = true;
-        }
-    }
-    
     private Tile board[][];
     private int xTiles, yTiles, pixPerTile;
+    public Tileset tileset;
     
-    public Tiles(int xTiles, int yTiles, int pixPerTile) {
+    public Tiles(int xTiles, int yTiles, int pixPerTile, String tilesetLocation) {
         this.xTiles = xTiles;
         this.yTiles = yTiles;
         this.pixPerTile = pixPerTile;
         board = new Tile[xTiles][yTiles];
+
+        tileset = new Tileset(tilesetLocation, pixPerTile);
     }
 
     public int getWidth() {
@@ -61,12 +52,14 @@ public class Tiles {
         return board[x][y].solid;
     }
 
-    public void setTile(int x, int y, String graphic, boolean solid) {
+    public void setTile(int x, int y, int tileNum) {
         if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
             return;
         }
 
-        board[x][y] = new Tile(graphic, solid);
+        int maxTileNum = tileset.getNumTiles();
+
+        board[x][y] = tileset.getNewTile(tileNum);
     }
 
     public void draw(Graphics g) {

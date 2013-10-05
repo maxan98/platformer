@@ -41,6 +41,19 @@ public class Entity {
         return this.facing;
     }
 
+    private int distanceToSlope(int j) {
+        int pixMiddle = x + ((xBound - 1) / 2);
+        int iMiddle = tiles.pixToTile(pixMiddle);
+        
+        float progress = ((float) (pixMiddle - tiles.tileToPix(iMiddle))) /
+            tiles.getPixPerTile();
+        
+        return tiles.tileToPix(j) +
+            (int) (tiles.getLeftY(iMiddle, j) * (1.0 - progress) +
+                   tiles.getRightY(iMiddle, j) * progress)
+            - (y + yBound - 1);
+    }
+
     public void move(long delta) {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);
@@ -52,6 +65,8 @@ public class Entity {
                 tiles.setDirty(i, j);
             }
         }
+
+        boolean startsOnGround = onGround();
 
         float deltaX = ((float) (delta * dx)) / 1000;
         if (deltaX > 0) {
@@ -65,8 +80,14 @@ public class Entity {
             int i = iMax + 1;
             while (i < tiles.getWidth()) {
                 int j;
-                for (j = jMin; j <= jMax; j++) {
-                    if (tiles.isSolid(i, j)) break;
+                for (j = jMin ; j <= jMax; j++) {
+                    if (tiles.isSlope(i, j)) {
+                        if (tiles.slopesLeft(i, j)
+                            && tiles.getLeftY(i, j) + tiles.tileToPix(j) < y + yBound - 1) break;
+                    }
+                    if (tiles.isSolid(i, j)) {
+                        if (!tiles.isSlope(i-1, j)) break;
+                    }
                 }
                 if (j <= jMax) break;
                 i++;
@@ -81,8 +102,15 @@ public class Entity {
             int i = iMin - 1;
             while (i >= 0) {
                 int j;
-                for (j = jMin; j <= jMax; j++) {
-                    if (tiles.isSolid(i, j)) break;
+                for (j = jMin ; j <= jMax; j++) {
+                    if (tiles.isSlope(i, j)) {
+                        if (tiles.slopesRight(i, j)
+                            && tiles.getRightY(i, j) + tiles.tileToPix(j) < y + yBound - 1) break;
+                    }
+                    if (tiles.isSolid(i, j)) {
+                        if (!tiles.isSlope(i+1, j)) break;
+                        if (tiles.getLeftY(i+1, j) > 0) break;
+                    }
                 }
                 if (j <= jMax) break;
                 i--;
@@ -101,22 +129,37 @@ public class Entity {
 
         iMin = tiles.pixToTile((int) x);
         iMax = tiles.pixToTile((int) x + xBound - 1);
+        int pixMiddle = x + ((xBound - 1) / 2);
+        int iMiddle = tiles.pixToTile(pixMiddle);
 
         float deltaY = ((float) (delta * dy)) / 1000;
-
         if (deltaY > 0) {
-            int j = jMax + 1;
+            int j = jMax;
             while (j < tiles.getHeight()) {
                 int i;
                 for (i = iMin; i <= iMax; i++) {
                     if (tiles.isSolid(i, j)) break;
+                    if (tiles.isOneWay(i, j)) break;
+                    if (tiles.isSlope(i, j) && i == iMiddle) break;
+                    if (tiles.isSlope(i, j) && tiles.isEmpty(iMiddle, j)) {
+                        if (i < iMiddle && tiles.slopesRight(i, j)) break;
+                        if (i > iMiddle && tiles.slopesLeft(i, j)) break;
+                    }
                 }
                 if (i <= iMax) break;
                 j++;
             }
-            
+
             int distanceToObstacle = tiles.tileToPix(j) - (y + yBound);
+
+            if (tiles.isSlope(iMiddle, j)) {
+                distanceToObstacle = distanceToSlope(j);
+            }
+            
             if (distanceToObstacle < deltaY) {
+                deltaY = (float) distanceToObstacle;
+                dy = 0;
+            } else if (startsOnGround && tiles.isSlope(iMiddle, j)) {
                 deltaY = (float) distanceToObstacle;
                 dy = 0;
             }
@@ -126,7 +169,7 @@ public class Entity {
             while (j >= 0) {
                 int i;
                 for (i = iMin; i <= iMax; i++) {
-                    if (tiles.isSolid(i, j)) break;
+                    if (tiles.isSolid(i, j) || tiles.isSlope(i, j)) break;
                 }
                 if (i <= iMax) break;
                 j--;
@@ -147,11 +190,18 @@ public class Entity {
     public boolean onGround() {
         int iMin = tiles.pixToTile(x);
         int iMax = tiles.pixToTile(x + xBound - 1);
+        int pixMiddle = x + ((xBound - 1) / 2);
+        int iMiddle = tiles.pixToTile(pixMiddle);
         int jBelowFeet = tiles.pixToTile(y + yBound);
+
+        if (tiles.isSlope(iMiddle, jBelowFeet)) {
+            return distanceToSlope(jBelowFeet) <= 0;
+        }
 
         int i;
         for (i = iMin; i <= iMax; i++) {
             if (tiles.isSolid(i, jBelowFeet)) break;
+            if (tiles.isOneWay(i, jBelowFeet)) break;
         }
         
         return i <= iMax;    

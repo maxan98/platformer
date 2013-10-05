@@ -1,18 +1,19 @@
-16
-background false
-block true
-0_100_slope true
-0_50_slope true
-50_100_slope true
-0_25_slope true
-25_50_slope true
-50_75_slope true 
-75_100_slope true
-100_0_slope true
-100_50_slope true
-50_0_slope true
-100_75_slope true
-75_50_slope true 
-50_25_slope true
-25_0_slope true
+17
+background 0
+block 1
+one_way_block 3
+0_100_slope 2 15 0
+0_50_slope 2 15 8
+50_100_slope 2 7 0
+0_25_slope 2 15 12
+25_50_slope 2 11 8
+50_75_slope 2 7 4
+75_100_slope 2 3 0
+100_0_slope 2 0 15
+100_50_slope 2 0 7
+50_0_slope 2 8 15
+100_75_slope 2 0 3
+75_50_slope 2 4 7
+50_25_slope 2 8 11
+25_0_slope 2 12 15
   

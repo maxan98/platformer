@@ -44,14 +44,65 @@ public class Tiles {
         board[x][y].dirty = true;
     }
 
+    public boolean isEmpty(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return false;
+        }
+
+        return board[x][y].type == Tile.NON_SOLID;
+
+    }
+
     public boolean isSolid(int x, int y) {
         if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
             return false;
         }
 
-        return board[x][y].solid;
+        return board[x][y].type == Tile.SOLID;
     }
 
+    public boolean isSlope(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return false;
+        }
+
+        return board[x][y].type == Tile.SLOPE;
+    }
+
+    public boolean isOneWay(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return false;
+        }
+
+        return board[x][y].type == Tile.ONE_WAY;
+    }
+
+    public int getLeftY(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return 0;
+        }
+
+        return board[x][y].leftY;
+    }
+
+    public int getRightY(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return 0;
+        }
+
+        return board[x][y].rightY;
+    }
+
+    public boolean slopesRight(int x, int y) {
+        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
+            return false;
+        }
+        
+        return getRightY(x,y) < getLeftY(x,y);
+    }
+    
+    public boolean slopesLeft(int x, int y) { return !slopesRight(x,y); }
+    
     public void setTile(int x, int y, int tileNum) {
         if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
             return;

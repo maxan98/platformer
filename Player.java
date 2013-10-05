@@ -34,7 +34,7 @@ public class Player extends Entity {
         }
 
         if (input.isKeyDown(InputListener.JUMP)) {
-            if (currentlyOnGround) {
+            if (currentlyOnGround && dy >= 0) {
                 dy = -jumpImpulse;
                 hangTime = 0;
             } else if (hangTime < maxHangTime) {

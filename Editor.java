@@ -28,6 +28,8 @@ public class Editor {
         cursorX = camera.cameraToGlobalX(input.getMouseX());
         cursorY = camera.cameraToGlobalY(input.getMouseY());
 
+        if (input.getKeyTyped(InputListener.SAVE)) { tiles.save("default_level"); }
+
         if (input.getKeyTyped(InputListener.UP)) { brushSize++; }
         if (input.getKeyTyped(InputListener.DOWN)) {
             if (brushSize > 1) { brushSize--; }

@@ -1,18 +1,61 @@
 import java.awt.*;
+import java.io.*;
 
 public class Tiles {
 
     private Tile board[][];
-    private int xTiles, yTiles, pixPerTile;
+    private int xTiles, yTiles;
     public Tileset tileset;
+    public int startingPlayerX;
+    public int startingPlayerY;
     
-    public Tiles(int xTiles, int yTiles, int pixPerTile, String tilesetLocation) {
+    public Tiles(int xTiles, int yTiles, String tilesetLocation) {
         this.xTiles = xTiles;
         this.yTiles = yTiles;
-        this.pixPerTile = pixPerTile;
-        board = new Tile[xTiles][yTiles];
+        this.startingPlayerX = 50;
+        this.startingPlayerY = 50;
+        this.board = new Tile[xTiles][yTiles];
+        this.tileset = new Tileset(tilesetLocation);
+    }
 
-        tileset = new Tileset(tilesetLocation, pixPerTile);
+    public Tiles(String filename) {
+        BufferedReader br = null;
+        try {
+            
+            br = new BufferedReader(new FileReader(filename));
+            this.xTiles = Integer.parseInt(br.readLine());
+            this.yTiles = Integer.parseInt(br.readLine());
+            String tilesetLocation = "./assets/tilesets/" + br.readLine();
+            this.tileset = new Tileset(tilesetLocation);
+            this.startingPlayerX = Integer.parseInt(br.readLine());
+            this.startingPlayerY = Integer.parseInt(br.readLine());
+
+            board = new Tile[xTiles][yTiles];
+            int j = 0;
+
+            String currentLine;
+            while ((currentLine = br.readLine()) != null) {
+                if (j >= yTiles) break;
+                String[] tokens = currentLine.split(" ");
+
+                for (int i = 0; i < xTiles; i++) {
+                    if (i >= tokens.length) break;
+                    int tileNum = Integer.parseInt(tokens[i]);
+                    board[i][j] = tileset.getNewTile(tileNum);
+                }
+
+                j++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        } finally {
+            try {
+                if (br != null) { br.close(); }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public int getWidth() {
@@ -24,16 +67,16 @@ public class Tiles {
     }
 
     public int getPixPerTile() {
-        return pixPerTile;
+        return tileset.getPixPerTile();
     }
 
     public int pixToTile(int pixel) {
-        return pixel/pixPerTile;
+        return pixel/getPixPerTile();
     }
 
     // returns the pixel of the left or top edge of the tile
     public int tileToPix(int tile) {
-        return pixPerTile*tile;
+        return getPixPerTile()*tile;
     }
 
     public void setDirty(int x, int y) {
@@ -109,18 +152,54 @@ public class Tiles {
         }
 
         int maxTileNum = tileset.getNumTiles();
+        if (tileNum >= maxTileNum || tileNum < 0) {
+            return;
+        }
 
         board[x][y] = tileset.getNewTile(tileNum);
     }
 
     public void draw(Graphics g) {
-        for (int i = 0, x = 0; i < xTiles; i++, x+=pixPerTile) {
-            for (int j = 0, y = 0; j < yTiles; j++, y+=pixPerTile) {
+        int ppt = getPixPerTile();
+        for (int i = 0, x = 0; i < xTiles; i++, x+=ppt) {
+            for (int j = 0, y = 0; j < yTiles; j++, y+=ppt) {
                 if (board[i][j].dirty) {
                     board[i][j].sprite.draw(g, x, y);
                     board[i][j].dirty = false;
                 }
             }
+        }
+    }
+
+    public void save(String filename) {
+        try {
+            File file = new File("./assets/levels/" + filename);
+            file.createNewFile();
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fw);
+            
+            bw.write(Integer.toString(xTiles));
+            bw.newLine();
+            bw.write(Integer.toString(yTiles));
+            bw.newLine();
+            bw.write("default.txt");
+            bw.newLine();
+            bw.write(Integer.toString(startingPlayerX));
+            bw.newLine();
+            bw.write(Integer.toString(startingPlayerY));
+            bw.newLine();
+            for (int j = 0; j < yTiles; j++) {
+                for (int i = 0; i < xTiles; i++) {
+                    bw.write(Integer.toString(board[i][j].num));
+                    bw.write(" ");
+                }
+                bw.newLine();
+            }
+            
+
+            bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

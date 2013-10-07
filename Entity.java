@@ -24,7 +24,7 @@ public class Entity {
         this.x = x;
         this.y = y;
         this.xBound = sprite.getWidth();
-        this.yBound = sprite.getHeight();
+        this.yBound = sprite.getHeight(); 
         this.tiles = tiles;
         this.facing = 1;
     }
@@ -159,7 +159,8 @@ public class Entity {
             if (distanceToObstacle < deltaY) {
                 deltaY = (float) distanceToObstacle;
                 dy = 0;
-            } else if (startsOnGround && tiles.isSlope(iMiddle, j)) {
+            } else if (startsOnGround &&
+                       distanceToSlope(j) < tiles.getPixPerTile()) {
                 deltaY = (float) distanceToObstacle;
                 dy = 0;
             }
@@ -205,6 +206,23 @@ public class Entity {
         }
         
         return i <= iMax;    
+    }
+
+    public boolean onOneWayPlatform() {
+        int iMin = tiles.pixToTile(x);
+        int iMax = tiles.pixToTile(x + xBound - 1);
+        int pixMiddle = x + ((xBound - 1) / 2);
+        int iMiddle = tiles.pixToTile(pixMiddle);
+        int jBelowFeet = tiles.pixToTile(y + yBound);
+
+        int i;
+        boolean hasOneWay = false;
+        for (i = iMin; i <= iMax; i++) {
+            if (tiles.isOneWay(i, jBelowFeet)) hasOneWay = true;
+            if (!tiles.isOneWay(i, jBelowFeet) && !tiles.isEmpty(i, jBelowFeet)) break;
+        }
+        
+        return i > iMax && hasOneWay;    
     }
 
 

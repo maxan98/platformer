@@ -16,12 +16,10 @@ public class Game extends Canvas {
     BufferedImage render;
     Camera camera;
 
-    public Game(GraphicsDevice device, int xTiles, int yTiles) {
-        this.xSize = xTiles * 16;
-        this.ySize = yTiles * 16;
+    private void gameInit(GraphicsDevice device) {
         this.xRes = 50*16;
         this.yRes = 36*16;
-        
+
         JFrame container = new JFrame("Game");
         container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -39,7 +37,7 @@ public class Game extends Canvas {
         
         createBufferStrategy(2);            
         bf = getBufferStrategy();
-
+        
         // Set up the render. We draw to the render, which is then clipped
         // by the camera and drawn to the screen
         GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
@@ -48,8 +46,25 @@ public class Game extends Canvas {
         
         camera = new Camera(xRes, yRes, 0, 0, Camera.SMART);
 
+        // Set up input listeners
+        input = new InputListener(this);
+        
+        // Set up the world editor
+        editor = new Editor(tiles);
+    }
+
+    public Game(GraphicsDevice device, String filename) {
+        tiles = new Tiles("./assets/levels/" + filename);
+        this.xSize = tiles.getWidth() * tiles.getPixPerTile();
+        this.ySize = tiles.getHeight() * tiles.getPixPerTile();
+
+        player = new Player(tiles);
+        gameInit(device);
+    }
+
+    public Game(GraphicsDevice device, int xTiles, int yTiles) {
         // Set up game world
-        tiles = new Tiles(xTiles, yTiles, 16, "./assets/tilesets/default.txt");
+        tiles = new Tiles(xTiles, yTiles, "./assets/tilesets/default.txt");
         for (int i = 0; i < tiles.getWidth(); i++) {
             for (int j = 0; j < tiles.getWidth(); j++) {
                 if (i == 0 || i == tiles.getWidth() - 1 
@@ -61,13 +76,12 @@ public class Game extends Canvas {
             }
         }
 
-        player = new Player(tiles, 50,50);
-
-        // Set up input listeners
-        input = new InputListener(this);
+        this.xSize = xTiles * tiles.getPixPerTile();
+        this.ySize = yTiles * tiles.getPixPerTile();
         
-        // Set up the world editor
-        editor = new Editor(tiles);
+        player = new Player(tiles);
+
+        gameInit(device);
     }
 
     public void handleInput(long delta) {
@@ -117,11 +131,14 @@ public class Game extends Canvas {
 
     static Game game;
 
-    public static void init() {
+    public static void init(String filename) {
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = env.getDefaultScreenDevice();
-        game = new Game(device, 80, 50);
-
+        if (filename != null) {
+            game = new Game(device, filename);
+        } else {
+            game = new Game(device, 80, 50);
+        }
         Thread loop = new Thread()
             {
                 public void run()
@@ -157,9 +174,16 @@ public class Game extends Canvas {
     }
 
     public static void main(String args[]) {
+        final boolean has_level = args.length > 0;
+        String levelfoo = null;
+        if (has_level) {
+            levelfoo= args[0];
+        }
+        final String level = levelfoo;
+
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    init();
+                    init(level);
                 }
             });
     }

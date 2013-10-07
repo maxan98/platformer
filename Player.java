@@ -17,6 +17,9 @@ public class Player extends Entity {
         this.hangTime = 0;
     }
 
+    public Player(Tiles tiles) {
+        this(tiles, tiles.startingPlayerX, tiles.startingPlayerY);
+    }
 
     public void handleInput(InputListener input, long delta) {
         boolean currentlyOnGround = onGround();
@@ -31,6 +34,23 @@ public class Player extends Entity {
             targetDx = maxSpeed;
         } else {
             targetDx = 0;
+        }
+
+        if (input.isKeyDown(InputListener.DOWN)) {
+            if (onOneWayPlatform()) {
+                int iMin = tiles.pixToTile(x);
+                int iMax = tiles.pixToTile(x + xBound - 1);
+                int jMin = tiles.pixToTile(y);
+                int jMax = tiles.pixToTile(y + yBound - 1);
+
+                for (int i = iMin; i <= iMax; i++) {
+                    for (int j = jMin; j <= jMax; j++) {
+                        tiles.setDirty(i, j);
+                    }
+                }
+
+                this.y += 16;
+            }
         }
 
         if (input.isKeyDown(InputListener.JUMP)) {

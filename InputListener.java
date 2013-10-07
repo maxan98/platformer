@@ -95,6 +95,7 @@ public class InputListener {
     public static final int DOWN = KeyEvent.VK_DOWN;
     public static final int JUMP = KeyEvent.VK_SPACE;
     public static final int MODE_SWITCH = KeyEvent.VK_ENTER;
+    public static final int SAVE = KeyEvent.VK_S;
 
     private MouseListener ml;
     private KeyListener kl;

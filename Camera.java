@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Camera {
-    private int x, y; // upper left
+    public int x, y; // upper left
     private float xRemainder, yRemainder;
     private int xTarget, yTarget;
     private int xRes, yRes;
@@ -25,6 +25,7 @@ public class Camera {
     public Camera(int xRes, int yRes, int x, int y, int mode) {
         this.xRes = xRes;
         this.yRes = yRes;
+
         this.x = x;
         this.y = y;
         this.xTarget = x;
@@ -214,8 +215,6 @@ public class Camera {
             y = 0;
             yTarget = y;
         }
-
-
     }
 
     public void render(Graphics g, BufferedImage image) {

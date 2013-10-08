@@ -37,7 +37,7 @@ public class Player extends Entity {
         }
 
         if (input.isKeyDown(InputListener.DOWN)) {
-            if (onOneWayPlatform()) {
+            if (currentlyOnGround && onOneWayPlatform()) {
                 int iMin = tiles.pixToTile(x);
                 int iMax = tiles.pixToTile(x + xBound - 1);
                 int jMin = tiles.pixToTile(y);
@@ -49,7 +49,7 @@ public class Player extends Entity {
                     }
                 }
 
-                this.y += 16;
+                this.y += 1;
             }
         }
 

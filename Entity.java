@@ -82,8 +82,11 @@ public class Entity {
                 int j;
                 for (j = jMin ; j <= jMax; j++) {
                     if (tiles.isSlope(i, j)) {
-                        if (tiles.slopesLeft(i, j)
-                            && tiles.getLeftY(i, j) + tiles.tileToPix(j) < y + yBound - 1) break;
+                        if (!tiles.isSlope(i-1, j) &&
+                            tiles.getLeftY(i, j) + tiles.tileToPix(j) < y + yBound - 1) {
+                            if (tiles.slopesLeft(i, j)) break;
+                            if (tiles.slopesRight(i, j) && !tiles.isSlope(i-1, j+1)) break; 
+                        }
                     }
                     if (tiles.isSolid(i, j)) {
                         if (!tiles.isSlope(i-1, j)) break;
@@ -104,8 +107,11 @@ public class Entity {
                 int j;
                 for (j = jMin ; j <= jMax; j++) {
                     if (tiles.isSlope(i, j)) {
-                        if (tiles.slopesRight(i, j)
-                            && tiles.getRightY(i, j) + tiles.tileToPix(j) < y + yBound - 1) break;
+                        if (!tiles.isSlope(i+1,j) &&
+                            tiles.getRightY(i, j) + tiles.tileToPix(j) < y + yBound - 1) {
+                            if (tiles.slopesRight(i, j)) break;
+                            if (tiles.slopesLeft(i, j) && !tiles.isSlope(i+1,j+1)) break;
+                        }
                     }
                     if (tiles.isSolid(i, j)) {
                         if (!tiles.isSlope(i+1, j)) break;
@@ -122,6 +128,9 @@ public class Entity {
                 dx = 0;
             }
         }
+
+        int oldPixMiddle = x + ((xBound - 1) / 2);
+        int oldiMiddle = tiles.pixToTile(oldPixMiddle);
         
         deltaX += xRemainder;
         x += (int) deltaX;
@@ -150,21 +159,29 @@ public class Entity {
                 j++;
             }
 
-            int distanceToObstacle = tiles.tileToPix(j) - (y + yBound);
-
+            int distanceToObstacle;
             if (tiles.isSlope(iMiddle, j)) {
                 distanceToObstacle = distanceToSlope(j);
+            } else {
+                distanceToObstacle = tiles.tileToPix(j) - (y + yBound);
             }
-            
-            if (distanceToObstacle < deltaY) {
-                deltaY = (float) distanceToObstacle;
-                dy = 0;
-            } else if (startsOnGround &&
-                       distanceToSlope(j) < tiles.getPixPerTile()) {
-                deltaY = (float) distanceToObstacle;
-                dy = 0;
+            boolean collision = false;
+            if (tiles.isSlope(oldiMiddle, jMax)) {
+                if (distanceToObstacle < deltaY ||
+                    (startsOnGround && distanceToObstacle < tiles.getPixPerTile())) {
+                    collision = true;
+                }
+            } else {
+                if (distanceToObstacle < deltaY && distanceToObstacle >= 0) {
+                    collision = true;
+                }
             }
 
+            if (collision) {
+                deltaY = (float) distanceToObstacle;
+                yRemainder = 0;
+                dy = 0;
+            }
         } else if (deltaY < 0) {
             int j = jMin - 1;
             while (j >= 0) {
@@ -177,8 +194,9 @@ public class Entity {
             }
 
             int distanceToObstacle = tiles.tileToPix(j) + tiles.getPixPerTile() - y;
-            if (distanceToObstacle > deltaY) {
+            if (distanceToObstacle > deltaY && distanceToObstacle <= 0) {
                 deltaY = (float) distanceToObstacle;
+                yRemainder = 0;
                 dy = 0;
             }
         }

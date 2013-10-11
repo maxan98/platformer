@@ -15,10 +15,11 @@ public class Game extends Canvas {
     boolean editorActive;
     BufferedImage render;
     Camera camera;
+    long mainFPS, renderFPS;
 
     private void gameInit(GraphicsDevice device) {
-        this.xRes = 50*16;
-        this.yRes = 36*16;
+        this.xRes = 20*16;
+        this.yRes = 20*16;
 
         JFrame container = new JFrame("Game");
         container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -116,12 +117,28 @@ public class Game extends Canvas {
         if (editorActive) {
             editor.draw(gRender);
         }
+    }
+
+    public void drawFPS(Graphics g) {
+        String mainFPSString = String.format("FPS (main): %d", mainFPS);
+        String renderFPSString = String.format("FPS (rendering): %d", renderFPS);
         
+        g.drawChars(mainFPSString.toCharArray(),
+                    0, mainFPSString.length(),
+                    20, 20);
+        g.drawChars(renderFPSString.toCharArray(),
+                    0, renderFPSString.length(),
+                    150, 20);
+    }
+    
+    public void render() {
         Graphics g = null;
         
         try {
             g = bf.getDrawGraphics();
             camera.render(g, render);
+            drawFPS(g);
+
         } finally {
             g.dispose();
         }
@@ -139,18 +156,28 @@ public class Game extends Canvas {
         } else {
             game = new Game(device, 80, 50);
         }
-        Thread loop = new Thread()
+        Thread mainLoop = new Thread()
             {
                 public void run()
                 {
-                    loop();
+                    mainLoop();
                 }
             };
-        loop.start();
+
+        Thread renderLoop = new Thread()
+            {
+                public void run()
+                {
+                    renderLoop();
+                }
+            };
+
+        mainLoop.start();
+        renderLoop.start();
     }
 
-    public static void loop() {
-        long millisecondsPerFrame = 10;
+    public static void mainLoop() {
+        long millisecondsPerFrame = 5;
         long beginningTime;
         long endTime;
         long lastFrameTime = millisecondsPerFrame;
@@ -159,8 +186,6 @@ public class Game extends Canvas {
             
             game.handleInput(lastFrameTime);
             game.update(lastFrameTime);
-            game.draw();
-            
             
             while (System.currentTimeMillis() - beginningTime < millisecondsPerFrame)
                 {
@@ -168,9 +193,29 @@ public class Game extends Canvas {
             
             lastFrameTime = System.currentTimeMillis() - beginningTime; 
             
-            StdOut.printf("FPS = %d\n", 1000 / lastFrameTime);
- 
+            game.mainFPS = 1000 / lastFrameTime;
         }
+    }
+
+    public static void renderLoop() {
+        long millisecondsPerFrame = 16;
+        long beginningTime;
+        long endTime;
+        long lastFrameTime = millisecondsPerFrame;
+        for ( ; ; ) {
+            beginningTime = System.currentTimeMillis();
+            
+            game.draw();
+            game.render();
+            
+            while (System.currentTimeMillis() - beginningTime < millisecondsPerFrame)
+                {
+                }
+            
+            lastFrameTime = System.currentTimeMillis() - beginningTime; 
+            
+            game.renderFPS = 1000 / lastFrameTime;
+         }
     }
 
     public static void main(String args[]) {

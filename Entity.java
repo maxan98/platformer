@@ -89,7 +89,7 @@ public class Entity {
                         }
                     }
                     if (tiles.isSolid(i, j)) {
-                        if (!tiles.isSlope(i-1, j)) break;
+                        if (!(tiles.isSlope(i-1, j) && 0 == tiles.getRightY(i-1, j))) break;
                     }
                 }
                 if (j <= jMax) break;
@@ -114,8 +114,7 @@ public class Entity {
                         }
                     }
                     if (tiles.isSolid(i, j)) {
-                        if (!tiles.isSlope(i+1, j)) break;
-                        if (tiles.getLeftY(i+1, j) > 0) break;
+                        if (!(tiles.isSlope(i+1, j) && 0 == tiles.getLeftY(i+1, j))) break;
                     }
                 }
                 if (j <= jMax) break;
@@ -158,7 +157,12 @@ public class Entity {
                 if (i <= iMax) break;
                 j++;
             }
-
+            
+            // TODO: Properly compute distance when the player is part-way off of a slope - 
+            // Right now, if the player's center is not above a slope block but the slope
+            // block is the one causing the collision, the slope block is treated as a full
+            // block. Fixing this will likely require changing the algorithm so it separately
+            // computes the distance to each square and then takes the maximum.
             int distanceToObstacle;
             if (tiles.isSlope(iMiddle, j)) {
                 distanceToObstacle = distanceToSlope(j);
@@ -166,15 +170,19 @@ public class Entity {
                 distanceToObstacle = tiles.tileToPix(j) - (y + yBound);
             }
             boolean collision = false;
-            if (tiles.isSlope(oldiMiddle, jMax)) {
-                if (distanceToObstacle < deltaY ||
-                    (startsOnGround && distanceToObstacle < tiles.getPixPerTile())) {
+            if (tiles.isSlope(iMiddle, jMax) ||
+                tiles.isSlope(iMiddle, jMax-1) ||
+                tiles.isSlope(oldiMiddle, jMax)) {
+                if (distanceToObstacle < deltaY) {
                     collision = true;
                 }
-            } else {
-                if (distanceToObstacle < deltaY && distanceToObstacle >= 0) {
+                if (startsOnGround && distanceToObstacle < tiles.getPixPerTile()) {
                     collision = true;
                 }
+            } else if (distanceToObstacle < deltaY && tiles.isSlope(oldiMiddle, jMax)) {
+                collision = true;
+            } else if (distanceToObstacle < deltaY && distanceToObstacle >= 0) {
+                collision = true;
             }
 
             if (collision) {

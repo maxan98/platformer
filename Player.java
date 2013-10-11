@@ -21,6 +21,19 @@ public class Player extends Entity {
         this(tiles, tiles.startingPlayerX, tiles.startingPlayerY);
     }
 
+    private void dirtyPlayer() {
+        int iMin = tiles.pixToTile(x);
+        int iMax = tiles.pixToTile(x + xBound - 1);
+        int jMin = tiles.pixToTile(y);
+        int jMax = tiles.pixToTile(y + yBound - 1);
+        
+        for (int i = iMin; i <= iMax; i++) {
+            for (int j = jMin; j <= jMax; j++) {
+                tiles.setDirty(i, j);
+            }
+        }
+    }
+
     public void handleInput(InputListener input, long delta) {
         boolean currentlyOnGround = onGround();
 
@@ -38,18 +51,8 @@ public class Player extends Entity {
 
         if (input.isKeyDown(InputListener.DOWN)) {
             if (currentlyOnGround && onOneWayPlatform()) {
-                int iMin = tiles.pixToTile(x);
-                int iMax = tiles.pixToTile(x + xBound - 1);
-                int jMin = tiles.pixToTile(y);
-                int jMax = tiles.pixToTile(y + yBound - 1);
-
-                for (int i = iMin; i <= iMax; i++) {
-                    for (int j = jMin; j <= jMax; j++) {
-                        tiles.setDirty(i, j);
-                    }
-                }
-
-                this.y += 1;
+                dirtyPlayer();
+                y += 1;
             }
         }
 
@@ -63,6 +66,13 @@ public class Player extends Entity {
             }
         }
 
+        if (input.isKeyDown(InputListener.RESET)) {
+            dirtyPlayer();
+            dx = 0;
+            dy = 0;
+            x = tiles.startingPlayerX;
+            y = tiles.startingPlayerY;
+        }
     }
     
     // returns the Y coordinate (of the center of the sprite)

@@ -218,7 +218,19 @@ public class Camera {
     }
 
     public void render(Graphics g, BufferedImage image) {
-        BufferedImage view = image.getSubimage(x, y, xRes, yRes);
+        BufferedImage view;
+        int imageSizeX = image.getWidth();
+        int imageSizeY = image.getHeight();
+        
+        if (xRes < imageSizeX && yRes < imageSizeY) {
+            view = image.getSubimage(x, y, xRes, yRes);
+        } else if (xRes < imageSizeX) {
+            view = image.getSubimage(x, 0, xRes, imageSizeY);
+        } else if (yRes < imageSizeY) {
+            view = image.getSubimage(0, y, imageSizeX, yRes);
+        } else {
+            view = image;
+        }
         g.drawImage(view, 0, 0, null);
     }
 

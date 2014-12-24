@@ -21,7 +21,6 @@ public class Tiles {
     public Tiles(String filename) {
         BufferedReader br = null;
         try {
-            
             br = new BufferedReader(new FileReader(filename));
             this.xTiles = Integer.parseInt(br.readLine());
             this.yTiles = Integer.parseInt(br.readLine());

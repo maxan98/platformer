@@ -60,7 +60,14 @@ public class Tileset {
 	return this.pixPerTile;
     }
 
+    public Tile getBackgroundTile() {
+	return this.tiles[0];
+    }
+
     public Tile getNewTile(int tileNum) {
+	assert tileNum >= 0;
+	assert tileNum < this.numTiles;
+
 	Tile original = this.tiles[tileNum];
 	Tile copy = new Tile();
 	copy.dirty = original.dirty;

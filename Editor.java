@@ -13,7 +13,9 @@ public class Editor {
     private int currentTile;
     private Sprite currentTileSprite;
 
-    public Editor(Tiles tiles) {
+    private String levelName;
+
+    public Editor(Tiles tiles, String levelName) {
         this.tiles = tiles;
         this.lastClick = System.currentTimeMillis();
         this.lastClickX = -1;
@@ -22,13 +24,15 @@ public class Editor {
 
         this.currentTile = 1;
         this.currentTileSprite = tiles.tileset.getNewTile(currentTile).sprite;
+	
+	this.levelName = levelName;
     }
 
     public void handleInput(InputListener input, Camera camera) {
         cursorX = camera.cameraToGlobalX(input.getMouseX());
         cursorY = camera.cameraToGlobalY(input.getMouseY());
 
-        if (input.getKeyTyped(InputListener.SAVE)) { tiles.save("default_level"); }
+        if (input.getKeyTyped(InputListener.SAVE)) { tiles.save(levelName); }
 
         if (input.getKeyTyped(InputListener.UP)) { brushSize++; }
         if (input.getKeyTyped(InputListener.DOWN)) {
@@ -37,10 +41,16 @@ public class Editor {
 
         if (input.getKeyTyped(InputListener.LEFT)) {
             currentTile--;
+	    if (currentTile < 0) {
+		currentTile = tiles.tileset.getNumTiles() - 1;
+	    }
             currentTileSprite = tiles.tileset.getNewTile(currentTile).sprite;
         }
         if (input.getKeyTyped(InputListener.RIGHT)) {
             currentTile++;
+	    if (currentTile >= tiles.tileset.getNumTiles()) {
+		currentTile = 0;
+	    }
             currentTileSprite = tiles.tileset.getNewTile(currentTile).sprite;
         }
         

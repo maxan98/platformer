@@ -3,6 +3,7 @@ import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import java.io.File;
 
 public class Game extends Canvas {
     BufferStrategy bf;
@@ -16,10 +17,11 @@ public class Game extends Canvas {
     BufferedImage render;
     Camera camera;
     long mainFPS, renderFPS;
+    String levelName;
 
     private void gameInit(GraphicsDevice device) {
-        this.xRes = 20*16;
-        this.yRes = 20*16;
+        this.xRes = xSize > 1280 ? 1280 : xSize;
+        this.yRes = ySize > 720 ? 720 : ySize;
 
         JFrame container = new JFrame("Game");
         container.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -51,39 +53,43 @@ public class Game extends Canvas {
         input = new InputListener(this);
         
         // Set up the world editor
-        editor = new Editor(tiles);
+        editor = new Editor(tiles, levelName);
     }
 
-    public Game(GraphicsDevice device, String filename) {
-        tiles = new Tiles("./assets/levels/" + filename);
-        this.xSize = tiles.getWidth() * tiles.getPixPerTile();
-        this.ySize = tiles.getHeight() * tiles.getPixPerTile();
+    public Game(GraphicsDevice device, String filename, String tileset,
+		int xTiles, int yTiles) {
+	this.levelName = filename;
 
-        player = new Player(tiles);
-        gameInit(device);
+	// Check if filename exists
+	File f = new File("./assets/levels/" + filename);
+	if (f.exists() && !f.isDirectory()) {
+	    System.out.println("filename exists");
+	    this.tiles = new Tiles("./assets/levels/" + filename);
+	    this.xSize = tiles.getWidth() * tiles.getPixPerTile();
+	    this.ySize = tiles.getHeight() * tiles.getPixPerTile();
+	} else {
+	    System.out.println("filename doesn't exist");	    
+	    // filename doesn't exist, make a new level with the given tileset.
+	    this.tiles = new Tiles(xTiles, yTiles, tileset);
+	    this.xSize = tiles.getWidth() * tiles.getPixPerTile();
+	    this.ySize = tiles.getHeight() * tiles.getPixPerTile();
+	    for (int i = 0; i < tiles.getWidth(); i++) {
+		for (int j = 0; j < tiles.getHeight(); j++) {
+		    if (i == 0 || i == tiles.getWidth() - 1 
+			|| j == 0 || j == tiles.getHeight() - 1) {
+			tiles.setTile(i, j, 1);
+		    } else {
+			tiles.setTile(i, j, 0);
+		    }
+		}
+	    }
+
+	}
+
+	player = new Player(tiles);
+	gameInit(device);
     }
 
-    public Game(GraphicsDevice device, int xTiles, int yTiles) {
-        // Set up game world
-        tiles = new Tiles(xTiles, yTiles, "./assets/tilesets/default.txt");
-        for (int i = 0; i < tiles.getWidth(); i++) {
-            for (int j = 0; j < tiles.getWidth(); j++) {
-                if (i == 0 || i == tiles.getWidth() - 1 
-                    || j == 0 || j == tiles.getHeight() - 1) {
-                    tiles.setTile(i, j, 1);
-                } else {
-                    tiles.setTile(i, j, 0);
-                }
-            }
-        }
-
-        this.xSize = xTiles * tiles.getPixPerTile();
-        this.ySize = yTiles * tiles.getPixPerTile();
-        
-        player = new Player(tiles);
-
-        gameInit(device);
-    }
 
     public void handleInput(long delta) {
         if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
@@ -103,7 +109,7 @@ public class Game extends Canvas {
             
         } else {
             player.updatePhysics(delta);
-            player.move(delta);            
+            player.move(delta);
         }
 
         camera.update(player, tiles, delta);
@@ -148,14 +154,12 @@ public class Game extends Canvas {
 
     static Game game;
 
-    public static void init(String filename) {
+    public static void init(String filename, String tilesetName, int xSize,
+			    int ySize) {
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = env.getDefaultScreenDevice();
-        if (filename != null) {
-            game = new Game(device, filename);
-        } else {
-            game = new Game(device, 80, 50);
-        }
+	game = new Game(device, filename, tilesetName, xSize, ySize);
+
         Thread mainLoop = new Thread()
             {
                 public void run()
@@ -219,16 +223,19 @@ public class Game extends Canvas {
     }
 
     public static void main(String args[]) {
-        final boolean has_level = args.length > 0;
-        String levelfoo = null;
-        if (has_level) {
-            levelfoo= args[0];
-        }
-        final String level = levelfoo;
+	if (args.length < 1) {
+	    System.out.println("Usage: java Game levelName [tilesetName]");
+	    return;
+	}
+
+        final String level = args[0];
+	final String tileset = (args.length > 1) ? args[1] : "default";
+	final int xSize = (args.length > 2) ? Integer.parseInt(args[2]) : 50;
+	final int ySize = (args.length > 3) ? Integer.parseInt(args[3]) : 30;
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    init(level);
+                    init(level, tileset, xSize, ySize);
                 }
             });
     }

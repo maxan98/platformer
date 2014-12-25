@@ -8,14 +8,17 @@ public class Tiles {
     public Tileset tileset;
     public int startingPlayerX;
     public int startingPlayerY;
+
+    private String tilesetName;
     
-    public Tiles(int xTiles, int yTiles, String tilesetLocation) {
+    public Tiles(int xTiles, int yTiles, String tilesetName) {
         this.xTiles = xTiles;
         this.yTiles = yTiles;
-        this.startingPlayerX = 50;
-        this.startingPlayerY = 50;
+        this.startingPlayerX = 100;
+        this.startingPlayerY = 100;
         this.board = new Tile[xTiles][yTiles];
-        this.tileset = new Tileset(tilesetLocation);
+        this.tileset = new Tileset("./assets/tilesets/" + tilesetName);
+	this.tilesetName = tilesetName;
     }
 
     public Tiles(String filename) {
@@ -24,7 +27,8 @@ public class Tiles {
             br = new BufferedReader(new FileReader(filename));
             this.xTiles = Integer.parseInt(br.readLine());
             this.yTiles = Integer.parseInt(br.readLine());
-            String tilesetLocation = "./assets/tilesets/" + br.readLine();
+	    this.tilesetName = br.readLine();
+            String tilesetLocation = "./assets/tilesets/" + this.tilesetName;
             this.tileset = new Tileset(tilesetLocation);
             this.startingPlayerX = Integer.parseInt(br.readLine());
             this.startingPlayerY = Integer.parseInt(br.readLine());
@@ -163,6 +167,7 @@ public class Tiles {
         for (int i = 0, x = 0; i < xTiles; i++, x+=ppt) {
             for (int j = 0, y = 0; j < yTiles; j++, y+=ppt) {
                 if (board[i][j].dirty) {
+		    tileset.getBackgroundTile().sprite.draw(g, x, y);
                     board[i][j].sprite.draw(g, x, y);
                     board[i][j].dirty = false;
                 }
@@ -181,7 +186,7 @@ public class Tiles {
             bw.newLine();
             bw.write(Integer.toString(yTiles));
             bw.newLine();
-            bw.write("default.txt");
+            bw.write(this.tilesetName);
             bw.newLine();
             bw.write(Integer.toString(startingPlayerX));
             bw.newLine();

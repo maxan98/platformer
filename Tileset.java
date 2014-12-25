@@ -7,6 +7,7 @@ public class Tileset {
     private int pixPerTile;
 
     public Tileset(String tilesetLocation) {
+	System.out.println("Reading tileset " + tilesetLocation);
 	BufferedReader br = null;
 	try {
 	    br = new BufferedReader(new FileReader(tilesetLocation));
@@ -60,6 +61,15 @@ public class Tileset {
     }
 
     public Tile getNewTile(int tileNum) {
-	return new Tile(this.tiles[tileNum]);
+	Tile original = this.tiles[tileNum];
+	Tile copy = new Tile();
+	copy.dirty = original.dirty;
+	copy.sprite = original.sprite;
+	copy.leftY = original.leftY;
+	copy.rightY = original.rightY;
+	copy.num = original.num;
+	copy.type = original.type;
+
+	return copy;
     }
 }

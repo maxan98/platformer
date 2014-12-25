@@ -24,15 +24,4 @@ public class Tile {
     public static final int ONE_WAY = 3;
 
     public Tile() {};
-
-    public Tile(Tile original) {
-	Tile copy = new Tile();
-
-	copy.dirty = original.dirty;
-	copy.sprite = original.sprite;
-	copy.leftY = original.leftY;
-	copy.rightY = original.rightY;
-	copy.num = original.num;
-	copy.type = original.type;
-    }
 }

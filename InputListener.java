@@ -8,15 +8,25 @@ import java.util.HashMap;
 public class InputListener {
 
     private class MouseListener extends MouseInputAdapter {
-        boolean mouseDown;
+        boolean leftMouseDown, rightMouseDown;
         int mouseX, mouseY;
 
         public void mousePressed(MouseEvent e) {
-            mouseDown = true;
+	    if (e.getButton() == MouseEvent.BUTTON1) {
+		leftMouseDown = true;
+	    }
+	    if (e.getButton() == MouseEvent.BUTTON3) {
+		rightMouseDown = true;
+	    }
         }
 
         public void mouseReleased(MouseEvent e) {
-            mouseDown = false;
+	    if (e.getButton() == MouseEvent.BUTTON1) {
+		leftMouseDown = false;
+	    }
+	    if (e.getButton() == MouseEvent.BUTTON3) {
+		rightMouseDown = false;
+	    }
         }
 
         public void mouseMoved(MouseEvent e) {
@@ -114,7 +124,9 @@ public class InputListener {
 
     public int getMouseY() { return ml.mouseY; }
 
-    public boolean mouseDown() { return ml.mouseDown; }
+    public boolean leftMouseDown() { return ml.leftMouseDown; }
+
+    public boolean rightMouseDown() { return ml.rightMouseDown; }
 
     public boolean isKeyDown(int keyCode) { return kl.isKeyDown(keyCode); }
 

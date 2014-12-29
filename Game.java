@@ -98,10 +98,10 @@ public class Game extends Canvas {
 	    input.clearAllKeysTyped();
 	}
 
-	if (editorActive) {
-	    editor.handleInput(input, camera);
-	} else {
+	editor.handleInput(input, camera, editorActive);
+	if (!editorActive) {
 	    InputSubsystem.get().update(input);
+	    AISubsystem.get().update();
 	    ControlSubsystem.get().update(delta);
 	    PhysicsSubsystem.get().update(delta);
 	    VelocitySubsystem.get().update(delta);

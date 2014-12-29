@@ -6,13 +6,14 @@ import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 public class SpriteStore {
-    // The singleton instance.
-    private static SpriteStore single = new SpriteStore();
-    
+    // Implement singleton pattern
+    private static final SpriteStore singleton = new SpriteStore();
+    private SpriteStore() {}
     public static SpriteStore get() {
-        return single;
+        return singleton;
     }
 
+    // Member variables
     private HashMap sprites = new HashMap();
     
     public Sprite getSprite(String ref) {

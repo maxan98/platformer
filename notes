@@ -1,0 +1,51 @@
+CES:
+
+An entity corresponds to a 'thing' in a game world. Concretely, an entity is a
+globally unique id, which maps to a set of components. For example, a player
+entity might have a Position component, a Drawable component, a Physics
+component, and a Input component. There can be dependencies between components -
+for example a Drawable component depends on the Position component, because to
+render something to the screen you need to know where to do so. Similarly, the
+Physics component depends on the Position component, reading and writing the
+position as it updates the player's position according to its current
+velocity. On the other hand, an immobile entity would have a Position and
+Drawable component, but not a Physics component.
+
+Concretely, a component is class with no methods, only data. Each subsystem is a
+singleton class that has as its member a table mapping entity ids to
+components. This table and the component class itself are private to the
+subsystem to provide proper encapsulation - if the Physics subsystem needs to
+modify a Position component, it calls a method of the Position subsystem passing
+in the appropriate component id.
+
+The main loop calls each subsystem's update method in turn. In its update
+method, each subsystem iterates over all of its components, updating them in
+turn and calling out to other subsystems as needed.
+
+Component initialization is tricky. Obviously you need to start by generating a
+new entity ID, which could be done with a singleton ID generator. Since
+components have dependencies on each other, you would need to ensure that each
+entity has a consistent set of components - you can't have a physics component
+without a position component, etc. Each subsystem can have hard-coded knowledge
+of what other subsystems it depends on. Then, there are two approaches to
+ensuring consistent component sets: in the "dynamic" approach, when a Physics
+component is created it will create a Position component if none exists. In the
+"static" approach, when a Physics component is created it asserts the existence
+of a Position component. The dynamic approach encourages a style where to create
+an entity you simply create the highest-level component and rely on it to
+automatically instantiate the components it depends on. The static approach
+requires clients to instantiate components manually in the correct order.
+
+I'm leaning towards the static approach - the dynamic approach encourages lazy
+programming, and may lead to hard to find bugs, while the static approach makes
+dependencies and components used explicit. Since usually some setup logic will
+need to take place with component initialization (like setting the initial x and
+y for a Position component), this method ensures that all of the necessary setup
+happens in the right place, instead of having mysterious default values. (Why
+did the bullet end up over there? Oh right, I forgot to set the initial position
+after the Position component was automatically instantiated when I created the
+Physics component.)
+
+Static helper methods could be created that will do the setup for common entity
+types - for example, a static "makeEnemy" method that initializes Position,
+Drawable, Physics, and AI components in the correct order.

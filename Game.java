@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.io.File;
+import java.util.LinkedList;
 
 public class Game extends Canvas {
     BufferStrategy bf;
@@ -86,39 +87,17 @@ public class Game extends Canvas {
 
 	}
 
-	player = new Player(tiles);
+	this.player = new Player(tiles);
+	this.entities.push(this.player);
+	
 	gameInit(device);
-    }
-
-
-    public void handleInput(long delta) {
-        if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
-            editorActive = !editorActive;
-            input.clearAllKeysTyped();
-        }
-
-        if (editorActive) {
-            editor.handleInput(input, camera);
-        } else {
-            player.handleInput(input, delta);
-        }
-    }
-
-    public void update(long delta) {
-        if (editorActive) { 
-            
-        } else {
-            player.updatePhysics(delta);
-            player.move(delta);
-        }
-
-        camera.update(player, tiles, delta);
     }
 
     public void draw() {
         Graphics gRender = render.getGraphics();
         tiles.draw(gRender);
-        player.draw(gRender);
+
+        SpriteSubsystem.get().update(gRender);
         
         if (editorActive) {
             editor.draw(gRender);
@@ -188,9 +167,25 @@ public class Game extends Canvas {
         for ( ; ; ) {
             beginningTime = System.currentTimeMillis();
             
-            game.handleInput(lastFrameTime);
-            game.update(lastFrameTime);
-            
+	    if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
+		editorActive = !editorActive;
+		input.clearAllKeysTyped();
+	    }
+
+	    if (editorActive) {
+		editor.handleInput(input, camera);
+	    } else {
+		player.handleInput(input, delta);
+		
+		PhysicsSubsystem.get().update(lastFrameTime);
+		VelocitySubsystem.get().update(lastFrameTime);
+		FacingSubsystem.get().update();
+		CollisionSubsystem.get().update(tiles);
+		PositionSubsystem.get().update();
+	    }
+
+	    camera.update(player, tiles, delta);
+
             while (System.currentTimeMillis() - beginningTime < millisecondsPerFrame)
                 {
                 }

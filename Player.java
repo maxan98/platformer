@@ -1,20 +1,50 @@
-public class Player extends Entity {
+public class Player { 
     private float maxSpeed = 400;
     private float jumpImpulse = 375;
     private float jumpExtra = 1000;
     private float maxHangTime = (float) 0.3;
     private float hangTime;
+    
+    private UniqueId id;
 
     private int lastGroundY;
     private boolean inJump;
 
+    private Tiles tiles;
+
     public Player(Tiles tiles, int x, int y) {
-        super(tiles, "./assets/sprites/player.png", x, y);
-        this.lastGroundY = 0;
-        this.gravityAffected = true;
-        this.xAcceleration = 850;
-        this.yAcceleration = 1200;
+	this.tiles = tiles;
+	
+	this.id = new UniqueId();
+        this.lastGroundY = 0;	
         this.hangTime = 0;
+
+	PositionComponent pc = new PositionComponent();
+	pc.x = x;
+	pc.y = y;
+	PositionSubsystem.get().newComponent(id, pc);
+	
+	VelocityComponent vc = new VelocityComponent();
+	PositionSubsystem.get().newComponent(id, vc);
+
+	FacingComponent fc = new FacingComponent();
+	fc.facing = 1;
+	FacingSubsystem.get().newComponent(id, fc);
+
+	SpriteComponent sc = new SpriteComponent();
+	sc.sprite = SpriteStore.get().getSprite("./assets/sprites/player.png");
+	SpriteSubsystem.get().newComponent(id, sc);
+
+	CollisionComponent cc = new CollisionComponent();
+	cc.xBound = sc.sprite.getWidth();
+	cc.yBound = sc.sprite.getHeight();
+	CollisionSubsystem.get().newComponent(id, cc);
+
+	PhysicsComponent pyc = new PhysicsComponent();
+	pyc.xAcceleration = 850;
+	pyc.yAcceleration = 1200;
+	pyc.gravityAffected = true;
+	PhysicsSubsystem.get().newComponent(id, pyc);
     }
 
     public Player(Tiles tiles) {
@@ -22,10 +52,12 @@ public class Player extends Entity {
     }
 
     private void dirtyPlayer() {
-        int iMin = tiles.pixToTile(x);
-        int iMax = tiles.pixToTile(x + xBound - 1);
-        int jMin = tiles.pixToTile(y);
-        int jMax = tiles.pixToTile(y + yBound - 1);
+	PositionComponent pc = PositionSubsystem.get().getComponent(id);
+	CollisionComponent cc = CollisionSubsystem.get().getComponent(id);	
+        int iMin = tiles.pixToTile(pc.x);
+        int iMax = tiles.pixToTile(pc.x + cc.xBound - 1);
+        int jMin = tiles.pixToTile(pc.y);
+        int jMax = tiles.pixToTile(pc.y + cc.yBound - 1);
         
         for (int i = iMin; i <= iMax; i++) {
             for (int j = jMin; j <= jMax; j++) {
@@ -35,43 +67,46 @@ public class Player extends Entity {
     }
 
     public void handleInput(InputListener input, long delta) {
-        boolean currentlyOnGround = onGround();
+	PositionComponent pc = PositionSubsystem.get().getComponent(id);
+	CollisionComponent cc = CollisionSubsystem.get().getComponent(id);	
+	VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
+	PhysicsComponent phyc = PhysicsSubsystem.get().getComponent(id);
 
-        if (currentlyOnGround) {
-            lastGroundY = y + yBound;
+        if (cc.onGround) {
+            lastGroundY = pc.y + cc.yBound;
         }
         
         if (input.isKeyDown(InputListener.LEFT) && !input.isKeyDown(InputListener.RIGHT)) {
-            targetDx = -1 * maxSpeed;
+            phyc.targetDx = -1 * maxSpeed;
         } else if (!input.isKeyDown(InputListener.LEFT) && input.isKeyDown(InputListener.RIGHT)) {
-            targetDx = maxSpeed;
+            phyc.targetDx = maxSpeed;
         } else {
-            targetDx = 0;
+            phyc.targetDx = 0;
         }
 
         if (input.isKeyDown(InputListener.DOWN)) {
             if (currentlyOnGround && onOneWayPlatform()) {
                 dirtyPlayer();
-                y += 1;
+                pc.y += 1;
             }
         }
 
         if (input.isKeyDown(InputListener.JUMP)) {
-            if (currentlyOnGround && dy >= 0) {
-                dy = -jumpImpulse;
+            if (cc.onGround && vc.dy >= 0) {
+                vc.dy = -jumpImpulse;
                 hangTime = 0;
             } else if (hangTime < maxHangTime) {
-                dy -= delta * jumpExtra / 1000;
+                vc.dy -= delta * jumpExtra / 1000;
                 hangTime += (float) delta / 1000;
             }
         }
 
         if (input.isKeyDown(InputListener.RESET)) {
             dirtyPlayer();
-            dx = 0;
-            dy = 0;
-            x = tiles.startingPlayerX;
-            y = tiles.startingPlayerY;
+            vc.dx = 0;
+            vc.dy = 0;
+            pc.x = tiles.startingPlayerX;
+            pc.y = tiles.startingPlayerY;
         }
     }
     
@@ -80,4 +115,22 @@ public class Player extends Entity {
     public int lastGroundY() {
         return lastGroundY;
     }
+
+    public int getCenterX() {
+	PositionComponent pc = PositionSubsystem.get().getComponent(id);
+	CollisionComponent cc = CollisionSubsystem.get().getComponent(id);	
+        return pc.x + (cc.xBound / 2);
+    }
+
+    public int getCenterY() {
+	PositionComponent pc = PositionSubsystem.get().getComponent(id);
+	CollisionComponent cc = CollisionSubsystem.get().getComponent(id);	
+        return pc.y + (cc.yBound / 2);
+    }
+
+    public int getFacing() {
+	FacingComponent fc = FacingSubsystem.get().getComponent(id);
+	return fc.facing;
+    }
+
 }

@@ -18,7 +18,6 @@ public class PhysicsSubsystem {
     public void newComponent(UniqueId id, PhysicsComponent pc) {
 	assert VelocitySubsystem.get().getComponent(id) != null;
 	assert PositionSubsystem.get().getComponent(id) != null;
-	assert CollisionSubsystem.get().getComponent(id) != null;
 	
 	cs.put(id, pc);
     }
@@ -26,39 +25,39 @@ public class PhysicsSubsystem {
     public void update(long delta) {
 	for (Map.Entry<UniqueId, PhysicsComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
-	    PhysicsComponent pc = entry.getValue();
+	    PhysicsComponent phyc = entry.getValue();
 	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
-	    CollisionComponent cc = CollisionSubsystem.get().getComponent(id);
+	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
 
-	    if (pc.gravityAffected && !cc.onGround) {
-		pc.targetDy = pc.terminalVelocity;
+	    if (phyc.gravityAffected && !pc.onGround) {
+		phyc.targetDy = phyc.terminalVelocity;
 	    }
 
-	    if (vc.dx < pc.targetDx) {
-		if (cc.onGround) {
-		    vc.dx += pc.xAcceleration * delta / 1000;
+	    if (vc.dx < phyc.targetDx) {
+		if (pc.onGround) {
+		    vc.dx += phyc.xAcceleration * delta / 1000;
 		} else {
-		    vc.dx += 0.5 * pc.xAcceleration * delta / 1000;
+		    vc.dx += 0.5 * phyc.xAcceleration * delta / 1000;
 		}
 
-		if (vc.dx > pc.targetDx) vc.dx = pc.targetDx;
+		if (vc.dx > phyc.targetDx) vc.dx = phyc.targetDx;
 
-	    } else if (vc.dx > pc.targetDx) {
-		if (cc.onGround) {
-		    vc.dx -= pc.xAcceleration * delta / 1000;
+	    } else if (vc.dx > phyc.targetDx) {
+		if (pc.onGround) {
+		    vc.dx -= phyc.xAcceleration * delta / 1000;
 		} else {
-		    vc.dx -= 0.5 * pc.xAcceleration * delta / 1000;
+		    vc.dx -= 0.5 * phyc.xAcceleration * delta / 1000;
 		}
 
-		if (vc.dx < pc.targetDx) vc.dx = pc.targetDx;
+		if (vc.dx < phyc.targetDx) vc.dx = phyc.targetDx;
 	    }
 
-	    if (vc.dy < pc.targetDy) {
-		vc.dy += pc.yAcceleration * delta / 1000;
-		if (vc.dy > pc.targetDy) vc.dy = pc.targetDy;
-	    } else if (vc.dy > pc.targetDy) {
-		vc.dy -= pc.yAcceleration * delta / 1000;
-		if (vc.dy < pc.targetDy) vc.dy = pc.targetDy;
+	    if (vc.dy < phyc.targetDy) {
+		vc.dy += phyc.yAcceleration * delta / 1000;
+		if (vc.dy > phyc.targetDy) vc.dy = phyc.targetDy;
+	    } else if (vc.dy > phyc.targetDy) {
+		vc.dy -= phyc.yAcceleration * delta / 1000;
+		if (vc.dy < phyc.targetDy) vc.dy = phyc.targetDy;
 	    }
 	}
     }

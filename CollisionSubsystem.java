@@ -30,15 +30,9 @@ public class CollisionSubsystem {
 	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
 
 	    int iMin = tiles.pixToTile(pc.x);
-	    int iMax = tiles.pixToTile(pc.x + cc.xBound - 1);
+	    int iMax = tiles.pixToTile(pc.x + pc.xBound - 1);
 	    int jMin = tiles.pixToTile(pc.y);
-	    int jMax = tiles.pixToTile(pc.y + cc.yBound - 1);
-
-	    for (int i = iMin; i <= iMax; i++) {
-		for (int j = jMin; j <= jMax; j++) {
-		    tiles.setDirty(i, j);
-		}
-	    }
+	    int jMax = tiles.pixToTile(pc.y + pc.yBound - 1);
 
 	    cc.hitWall = false;
 
@@ -50,7 +44,7 @@ public class CollisionSubsystem {
 		    for (j = jMin ; j <= jMax; j++) {
 			if (tiles.isSlope(i, j)) {
 			    if (!tiles.isSlope(i-1, j) &&
-				tiles.getLeftY(i, j) + tiles.tileToPix(j) < pc.y + cc.yBound - 1) {
+				tiles.getLeftY(i, j) + tiles.tileToPix(j) < pc.y + pc.yBound - 1) {
 				if (tiles.slopesLeft(i, j)) break;
 				if (tiles.slopesRight(i, j) && !tiles.isSlope(i-1, j+1)) break; 
 			    }
@@ -67,7 +61,7 @@ public class CollisionSubsystem {
 		    i++;
 		}
 
-		int distanceToObstacle = tiles.tileToPix(i) - (pc.x + cc.xBound);
+		int distanceToObstacle = tiles.tileToPix(i) - (pc.x + pc.xBound);
 		if (distanceToObstacle < pc.deltaX) {
 		    pc.deltaX = (float) distanceToObstacle;
 		    vc.dx = 0;
@@ -80,7 +74,7 @@ public class CollisionSubsystem {
 		    for (j = jMin ; j <= jMax; j++) {
 			if (tiles.isSlope(i, j)) {
 			    if (!tiles.isSlope(i+1,j) &&
-				tiles.getRightY(i, j) + tiles.tileToPix(j) < pc.y + cc.yBound - 1) {
+				tiles.getRightY(i, j) + tiles.tileToPix(j) < pc.y + pc.yBound - 1) {
 				if (tiles.slopesRight(i, j)) break;
 				if (tiles.slopesLeft(i, j) && !tiles.isSlope(i+1,j+1)) break;
 			    }
@@ -104,17 +98,19 @@ public class CollisionSubsystem {
 		}
 	    }
 
-	    int oldPixMiddle = pc.x + ((cc.xBound - 1) / 2);
+	    int oldPixMiddle = pc.x + ((pc.xBound - 1) / 2);
 	    int oldiMiddle = tiles.pixToTile(oldPixMiddle);
-        
-	    pc.deltaX += pc.xRemainder;
-	    pc.x += (int) pc.deltaX;
-	    pc.xRemainder = pc.deltaX - (int) pc.deltaX;
-	    pc.deltaX = 0;
 
-	    iMin = tiles.pixToTile((int) pc.x);
-	    iMax = tiles.pixToTile((int) pc.x + cc.xBound - 1);
-	    int pixMiddle = pc.x + ((cc.xBound - 1) / 2);
+	    // We need to use the new value of X for the y-axis collision
+	    // calculations. However, we don't want to actually change the
+	    // position component , or else the position component won't be able
+	    // to properly mark dirty tiles during its update step.
+	    float newDeltaX = pc.deltaX + pc.xRemainder;
+	    int newX = pc.x + (int) newDeltaX;
+
+	    iMin = tiles.pixToTile((int) newX);
+	    iMax = tiles.pixToTile((int) newX + pc.xBound - 1);
+	    int pixMiddle = newX + ((pc.xBound - 1) / 2);
 	    int iMiddle = tiles.pixToTile(pixMiddle);
 
 
@@ -144,9 +140,10 @@ public class CollisionSubsystem {
 		// then takes the maximum.
 		int distanceToObstacle;
 		if (tiles.isSlope(iMiddle, j)) {
-		    distanceToObstacle = distanceToSlope(j, tiles, pc, cc);
+		    distanceToObstacle = distanceToSlope(j, tiles, newX, pc.y,
+							 pc.xBound, pc.yBound);
 		} else {
-		    distanceToObstacle = tiles.tileToPix(j) - (pc.y + cc.yBound);
+		    distanceToObstacle = tiles.tileToPix(j) - (pc.y + pc.yBound);
 		}
 
 		boolean collision = false;
@@ -156,7 +153,7 @@ public class CollisionSubsystem {
 		    if (distanceToObstacle < pc.deltaY) {
 			collision = true;
 		    }
-		    if (cc.onGround && distanceToObstacle < tiles.getPixPerTile()) {
+		    if (pc.onGround && distanceToObstacle < tiles.getPixPerTile()) {
 			collision = true;
 		    }
 		} else if (distanceToObstacle < pc.deltaY && tiles.isSlope(oldiMiddle, jMax)) {
@@ -188,63 +185,13 @@ public class CollisionSubsystem {
 		    vc.dy = 0;
 		}
 	    }
-	    
-	    calculateOnGround(pc, cc, tiles);
-	    calculateOnOneWayPlatform(pc, cc, tiles);
 	}
     }
 
-    private static void calculateOnGround(PositionComponent pc,
-					  CollisionComponent cc,
-					  Tiles tiles) {
-        int iMin = tiles.pixToTile(pc.x);
-        int iMax = tiles.pixToTile(pc.x + cc.xBound - 1);
-        int pixMiddle = pc.x + ((cc.xBound - 1) / 2);
-        int iMiddle = tiles.pixToTile(pixMiddle);
-        int jBelowFeet = tiles.pixToTile(pc.y + cc.yBound);
-
-        if (tiles.isSlope(iMiddle, jBelowFeet)) {
-            cc.onGround = distanceToSlope(jBelowFeet, tiles, pc, cc) <= 0;
-	    return;
-        }
-
-        int i;
-        for (i = iMin; i <= iMax; i++) {
-            if (tiles.isSolid(i, jBelowFeet)) break;
-
-	    // If we're in the middle of a one way tile, we're not on the
-	    // ground.
-            if (tiles.isOneWay(i, jBelowFeet) &&
-		(pc.y + cc.yBound) % tiles.getPixPerTile() == 0) break;
-	    
-        }
-        
-        cc.onGround = i <= iMax;    
-    }
-
-    private static void calculateOnOneWayPlatform(PositionComponent pc,
-						  CollisionComponent cc,
-						  Tiles tiles) {
-        int iMin = tiles.pixToTile(pc.x);
-        int iMax = tiles.pixToTile(pc.x + cc.xBound - 1);
-        int pixMiddle = pc.x + ((cc.xBound - 1) / 2);
-        int iMiddle = tiles.pixToTile(pixMiddle);
-        int jBelowFeet = tiles.pixToTile(pc.y + cc.yBound);
-
-        int i;
-        boolean hasOneWay = false;
-        for (i = iMin; i <= iMax; i++) {
-            if (tiles.isOneWay(i, jBelowFeet)) hasOneWay = true;
-            if (!tiles.isOneWay(i, jBelowFeet) && !tiles.isEmpty(i, jBelowFeet)) break;
-        }
-        
-        cc.onOneWayPlatform = i > iMax && hasOneWay;
-    }
-
     public static int distanceToSlope(int j, Tiles tiles,
-				      PositionComponent pc,
-				      CollisionComponent cc) {
-        int pixMiddle = pc.x + ((cc.xBound - 1) / 2);
+				      int x, int y,
+				      int xBound, int yBound) {
+        int pixMiddle = x + ((xBound - 1) / 2);
         int iMiddle = tiles.pixToTile(pixMiddle);
         
         float progress = ((float) (pixMiddle - tiles.tileToPix(iMiddle))) /
@@ -253,7 +200,7 @@ public class CollisionSubsystem {
         return tiles.tileToPix(j) +
             (int) (tiles.getLeftY(iMiddle, j) * (1.0 - progress) +
                    tiles.getRightY(iMiddle, j) * progress)
-            - (pc.y + cc.yBound - 1);
+            - (y + yBound - 1);
     }
 }
 

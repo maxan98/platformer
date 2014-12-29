@@ -102,12 +102,13 @@ public class Game extends Canvas {
 	    editor.handleInput(input, camera);
 	} else {
 	    player.handleInput(input, delta);
-		
+
+	    ControlSubsystem.get().update(delta);
 	    PhysicsSubsystem.get().update(delta);
 	    VelocitySubsystem.get().update(delta);
 	    FacingSubsystem.get().update();
 	    CollisionSubsystem.get().update(tiles);
-	    PositionSubsystem.get().update();
+	    PositionSubsystem.get().update(tiles);
 	}
 
 	camera.update(player, tiles, delta);

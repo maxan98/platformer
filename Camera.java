@@ -38,9 +38,13 @@ public class Camera {
         }
     }
 
-    public void update(Player player, Tiles tiles, long delta) {
-        int playerX = player.getCenterX();
-        int playerY = player.getCenterY();
+    public void update(UniqueId idToFollow, Tiles tiles, long delta) {
+	ControlComponent ctrlc = ControlSubsystem.get().getComponent(idToFollow);
+	PositionComponent pc = PositionSubsystem.get().getComponent(idToFollow);
+	FacingComponent fc = FacingSubsystem.get().getComponent(idToFollow);
+
+        int playerX = pc.x + (pc.xBound / 2);
+        int playerY = pc.y + (pc.yBound / 2);
         int maxX = tiles.getWidth() * tiles.getPixPerTile();
         int maxY = tiles.getHeight() * tiles.getPixPerTile();
 
@@ -54,7 +58,7 @@ public class Camera {
             yTarget = playerY - (int) (yRes*.5);
             break;
         case FACING:
-            if (player.getFacing() > 0) {
+            if (fc.facing > 0) {
                 xTarget = playerX - (int) (xRes*.4);
             } else {
                 xTarget = playerX - (int) (xRes*.6);
@@ -63,12 +67,13 @@ public class Camera {
             break;
         case DRUNK: // fall-through
         case SMART:
-            if (player.getFacing() > 0) {
+
+            if (fc.facing > 0) {
                 xTarget = playerX - (int) (xRes*.4);
             } else {
                 xTarget = playerX - (int) (xRes*.6);
             }
-            if (playerY > player.lastGroundY() || player.onGround()) {
+            if (playerY > ctrlc.lastGroundY || pc.onGround) {
                 yTarget = playerY - (int) (yRes*.5);
             }
             break;

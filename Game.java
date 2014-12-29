@@ -12,7 +12,7 @@ public class Game extends Canvas {
     int xRes, yRes;
     Tiles tiles;
     InputListener input;
-    Player player;
+    UniqueId player;
     Editor editor;
     boolean editorActive;
     BufferedImage render;
@@ -87,7 +87,7 @@ public class Game extends Canvas {
 
 	}
 
-	this.player = new Player(tiles);
+	this.player = MakeEntities.makePlayer(tiles, 100, 100);
 	
 	gameInit(device);
     }
@@ -101,8 +101,7 @@ public class Game extends Canvas {
 	if (editorActive) {
 	    editor.handleInput(input, camera);
 	} else {
-	    player.handleInput(input, delta);
-
+	    InputSubsystem.get().update(input);
 	    ControlSubsystem.get().update(delta);
 	    PhysicsSubsystem.get().update(delta);
 	    VelocitySubsystem.get().update(delta);

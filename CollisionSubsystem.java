@@ -116,34 +116,45 @@ public class CollisionSubsystem {
 
 	    if (pc.deltaY > 0) {
 		int j = jMax;
+		int minTopY = tiles.getPixPerTile();
+		boolean foundCollidingTile = false;
 		while (j < tiles.getHeight()) {
 		    int i;
 		    for (i = iMin; i <= iMax; i++) {
-			if (tiles.isSolid(i, j)) break;
-			if (tiles.isOneWay(i, j)) break;
-			if (tiles.isSlope(i, j) && i == iMiddle) break;
+			if (tiles.isSolid(i, j)) {
+			    foundCollidingTile = true;
+			    minTopY = 0;
+			}
+			if (tiles.isOneWay(i, j)) {
+			    foundCollidingTile = true;
+			    minTopY = 0;
+			}
+			if (tiles.isSlope(i, j) && i == iMiddle) {
+			    foundCollidingTile = true;
+			}
 			if (tiles.isSlope(i, j) && tiles.isEmpty(iMiddle, j)) {
-			    if (i < iMiddle && tiles.slopesRight(i, j)) break;
-			    if (i > iMiddle && tiles.slopesLeft(i, j)) break;
+			    if (i < iMiddle && tiles.slopesRight(i, j)) {
+				foundCollidingTile = true;
+				int newTopY = tiles.getRightY(i, j);
+				minTopY = newTopY < minTopY ? newTopY : minTopY;
+			    }
+			    if (i > iMiddle && tiles.slopesLeft(i, j)) {
+				foundCollidingTile = true;
+				int newTopY = tiles.getLeftY(i, j);
+				minTopY = newTopY < minTopY ? newTopY : minTopY;
+			    }
 			}
 		    }
-		    if (i <= iMax) break;
+		    if (foundCollidingTile) break;
 		    j++;
 		}
             
-		// TODO: Properly compute distance when the player is part-way
-		// off of a slope - Right now, if the player's center is not
-		// above a slope block but the slope block is the one causing
-		// the collision, the slope block is treated as a full
-		// block. Fixing this will likely require changing the algorithm
-		// so it separately computes the distance to each square and
-		// then takes the maximum.
 		int distanceToObstacle;
 		if (tiles.isSlope(iMiddle, j)) {
 		    distanceToObstacle = distanceToSlope(j, tiles, newX, pc.y,
 							 pc.xBound, pc.yBound);
 		} else {
-		    distanceToObstacle = tiles.tileToPix(j) - (pc.y + pc.yBound);
+		    distanceToObstacle = tiles.tileToPix(j) - (pc.y + pc.yBound) + minTopY;
 		}
 
 		boolean collision = false;

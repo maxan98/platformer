@@ -58,6 +58,10 @@ public class CollisionSubsystem {
 			if (tiles.isSolid(i, j)) {
 			    if (!(tiles.isSlope(i-1, j) && 0 == tiles.getRightY(i-1, j))) break;
 			}
+
+			if (tiles.isOneWay(i, j)) {
+			    if (!tiles.isOneWay(i-1, j)) break;
+			}
 		    }
 		    if (j <= jMax) break;
 		    i++;
@@ -83,6 +87,9 @@ public class CollisionSubsystem {
 			}
 			if (tiles.isSolid(i, j)) {
 			    if (!(tiles.isSlope(i+1, j) && 0 == tiles.getLeftY(i+1, j))) break;
+			}
+			if (tiles.isOneWay(i, j)) {
+			    if (!tiles.isOneWay(i+1, j)) break;
 			}
 		    }
 		    if (j <= jMax) break;
@@ -204,7 +211,12 @@ public class CollisionSubsystem {
         int i;
         for (i = iMin; i <= iMax; i++) {
             if (tiles.isSolid(i, jBelowFeet)) break;
-            if (tiles.isOneWay(i, jBelowFeet)) break;
+
+	    // If we're in the middle of a one way tile, we're not on the
+	    // ground.
+            if (tiles.isOneWay(i, jBelowFeet) &&
+		(pc.y + cc.yBound) % tiles.getPixPerTile() == 0) break;
+	    
         }
         
         cc.onGround = i <= iMax;    

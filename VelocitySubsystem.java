@@ -1,4 +1,6 @@
-public class VelocitySubsystem() {
+import java.util.Map;
+
+public class VelocitySubsystem {
     // implement singleton pattern
     private static final VelocitySubsystem singleton = new VelocitySubsystem();
     private VelocitySubsystem() {}
@@ -14,13 +16,13 @@ public class VelocitySubsystem() {
     }
 
     public void newComponent(UniqueId id, VelocityComponent vc) {
-	assert PositionSubsystem.get().getComponent(id);
+	assert PositionSubsystem.get().getComponent(id) != null;
 	
 	cs.put(id, vc);
     }
 
     public void update(long delta) {
-	for (HashMap.Entry<UniqueId, VelocityComponent> entry : cs.entrySet()) {
+	for (Map.Entry<UniqueId, VelocityComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    VelocityComponent vc = entry.getValue();
 	    

@@ -1,4 +1,6 @@
-public class PhysicsSubsystem() {
+import java.util.Map;
+
+public class PhysicsSubsystem {
     // implement singleton pattern
     private static final PhysicsSubsystem singleton = new PhysicsSubsystem();
     private PhysicsSubsystem() {}
@@ -14,19 +16,19 @@ public class PhysicsSubsystem() {
     }
 
     public void newComponent(UniqueId id, PhysicsComponent pc) {
-	assert VelocitySubsystem.get().getComponent(id);
-	assert PositionSubsystem.get().getComponent(id);
-	assert CollisionSubsystem.get().getComponent(id);
+	assert VelocitySubsystem.get().getComponent(id) != null;
+	assert PositionSubsystem.get().getComponent(id) != null;
+	assert CollisionSubsystem.get().getComponent(id) != null;
 	
 	cs.put(id, pc);
     }
 
     public void update(long delta) {
-	for (HashMap.Entry<UniqueId, PhysicsComponent> entry : cs.entrySet()) {
+	for (Map.Entry<UniqueId, PhysicsComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    PhysicsComponent pc = entry.getValue();
 	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
-	    CollisionComponent cc = CollisionSubsytem.get().getComponent(id);
+	    CollisionComponent cc = CollisionSubsystem.get().getComponent(id);
 
 	    if (pc.gravityAffected && !cc.onGround) {
 		pc.targetDy = pc.terminalVelocity;

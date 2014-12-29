@@ -1,4 +1,7 @@
-public class SpriteSubsystem() {
+import java.awt.*;
+import java.util.Map;
+
+public class SpriteSubsystem {
     // implement singleton pattern
     private static final SpriteSubsystem singleton = new SpriteSubsystem();
     private SpriteSubsystem() {}
@@ -10,6 +13,7 @@ public class SpriteSubsystem() {
     private ComponentStore<SpriteComponent> cs = new ComponentStore<SpriteComponent>();
 
     public SpriteComponent getComponent(UniqueId id) {
+	assert PositionSubsystem.get().getComponent(id) != null;
 	return cs.get(id);
     }
 
@@ -18,7 +22,7 @@ public class SpriteSubsystem() {
     }
 
     public void update(Graphics g) {
-	for (HashMap.Entry<UniqueId, SpriteComponent> entry : cs.entrySet()) {
+	for (Map.Entry<UniqueId, SpriteComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    SpriteComponent sc = entry.getValue();
 	    

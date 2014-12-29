@@ -1,4 +1,6 @@
-public class FacingSubsystem() {
+import java.util.Map;
+
+public class FacingSubsystem {
     // implement singleton pattern
     private static final FacingSubsystem singleton = new FacingSubsystem();
     private FacingSubsystem() {}
@@ -14,17 +16,17 @@ public class FacingSubsystem() {
     }
 
     public void newComponent(UniqueId id, FacingComponent fc) {
-	assert VeloctitySubsystem.get().getComponent(id);
+	assert VelocitySubsystem.get().getComponent(id) != null;
 	
 	cs.put(id, fc);
     }
 
-    public void update(long delta) {
-	for (HashMap.Entry<UniqueId, FacingComponent> entry : cs.entrySet()) {
+    public void update() {
+	for (Map.Entry<UniqueId, FacingComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    FacingComponent fc = entry.getValue();
 	    
-	    VelocityComponent vc = FacingComponent.get().getComponent(id);
+	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
 	    if (vc.dx > 0) {
 		fc.facing = 1;
 	    } else if (vc.dx < 0) {

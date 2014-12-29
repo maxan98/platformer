@@ -88,9 +88,29 @@ public class Game extends Canvas {
 	}
 
 	this.player = new Player(tiles);
-	this.entities.push(this.player);
 	
 	gameInit(device);
+    }
+
+    public void update(long delta) {
+	if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
+	    editorActive = !editorActive;
+	    input.clearAllKeysTyped();
+	}
+
+	if (editorActive) {
+	    editor.handleInput(input, camera);
+	} else {
+	    player.handleInput(input, delta);
+		
+	    PhysicsSubsystem.get().update(delta);
+	    VelocitySubsystem.get().update(delta);
+	    FacingSubsystem.get().update();
+	    CollisionSubsystem.get().update(tiles);
+	    PositionSubsystem.get().update();
+	}
+
+	camera.update(player, tiles, delta);
     }
 
     public void draw() {
@@ -167,24 +187,7 @@ public class Game extends Canvas {
         for ( ; ; ) {
             beginningTime = System.currentTimeMillis();
             
-	    if (input.getKeyTyped(InputListener.MODE_SWITCH)) {
-		editorActive = !editorActive;
-		input.clearAllKeysTyped();
-	    }
-
-	    if (editorActive) {
-		editor.handleInput(input, camera);
-	    } else {
-		player.handleInput(input, delta);
-		
-		PhysicsSubsystem.get().update(lastFrameTime);
-		VelocitySubsystem.get().update(lastFrameTime);
-		FacingSubsystem.get().update();
-		CollisionSubsystem.get().update(tiles);
-		PositionSubsystem.get().update();
-	    }
-
-	    camera.update(player, tiles, delta);
+	    game.update(lastFrameTime);
 
             while (System.currentTimeMillis() - beginningTime < millisecondsPerFrame)
                 {

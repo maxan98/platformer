@@ -1,4 +1,6 @@
-public class CollisionSubsystem() {
+import java.util.Map;
+
+public class CollisionSubsystem {
     // implement singleton pattern
     private static final CollisionSubsystem singleton = new CollisionSubsystem();
     private CollisionSubsystem() {}
@@ -10,8 +12,8 @@ public class CollisionSubsystem() {
     private ComponentStore<CollisionComponent> cs = new ComponentStore<CollisionComponent>();
 
     public CollisionComponent getComponent(UniqueId id) {
-	assert PositionSubsystem.get().getComponent(id);
-	assert VelocityComponent.get().getComponent(id);
+	assert PositionSubsystem.get().getComponent(id) != null;
+	assert VelocitySubsystem.get().getComponent(id) != null;
 
 	return cs.get(id);
     }
@@ -21,10 +23,10 @@ public class CollisionSubsystem() {
     }
 
     public void update(Tiles tiles) {
-	for (HashMap.Entry<UniqueId, CollisionComponent> entry : cs.entrySet()) {
+	for (Map.Entry<UniqueId, CollisionComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    CollisionComponent cc = entry.getValue();
-	    PositionComponent pc = PositionSubsystem..get().getComponent(id);
+	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
 	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
 
 	    int iMin = tiles.pixToTile(pc.x);
@@ -48,7 +50,7 @@ public class CollisionSubsystem() {
 		    for (j = jMin ; j <= jMax; j++) {
 			if (tiles.isSlope(i, j)) {
 			    if (!tiles.isSlope(i-1, j) &&
-				tiles.getLeftY(i, j) + tiles.tileToPix(j) < y + cc.yBound - 1) {
+				tiles.getLeftY(i, j) + tiles.tileToPix(j) < pc.y + cc.yBound - 1) {
 				if (tiles.slopesLeft(i, j)) break;
 				if (tiles.slopesRight(i, j) && !tiles.isSlope(i-1, j+1)) break; 
 			    }
@@ -101,7 +103,7 @@ public class CollisionSubsystem() {
 	    pc.deltaX += pc.xRemainder;
 	    pc.x += (int) pc.deltaX;
 	    pc.xRemainder = pc.deltaX - (int) pc.deltaX;
-	    pc.deltaX = 0.0;
+	    pc.deltaX = 0;
 
 	    iMin = tiles.pixToTile((int) pc.x);
 	    iMax = tiles.pixToTile((int) pc.x + cc.xBound - 1);
@@ -135,14 +137,7 @@ public class CollisionSubsystem() {
 		// then takes the maximum.
 		int distanceToObstacle;
 		if (tiles.isSlope(iMiddle, j)) {
-		    float progress = ((float) (pixMiddle - tiles.tileToPix(iMiddle))) /
-			tiles.getPixPerTile();
-        
-		    distanceToObstacle =
-			tiles.tileToPix(j) +
-			(int) (tiles.getLeftY(iMiddle, j) * (1.0 - progress) +
-			       tiles.getRightY(iMiddle, j) * progress)
-			- (pc.y + cc.yBound - 1);
+		    distanceToObstacle = distanceToSlope(j, tiles, pc, cc);
 		} else {
 		    distanceToObstacle = tiles.tileToPix(j) - (pc.y + cc.yBound);
 		}
@@ -179,7 +174,7 @@ public class CollisionSubsystem() {
 		    j--;
 		}
 
-		int distanceToObstacle = tiles.tileToPix(j) + tiles.getPixPerTile() - y;
+		int distanceToObstacle = tiles.tileToPix(j) + tiles.getPixPerTile() - pc.y;
 		if (distanceToObstacle > pc.deltaY && distanceToObstacle <= 0) {
 		    pc.deltaY = (float) distanceToObstacle;
 		    pc.yRemainder = 0;
@@ -202,7 +197,7 @@ public class CollisionSubsystem() {
         int jBelowFeet = tiles.pixToTile(pc.y + cc.yBound);
 
         if (tiles.isSlope(iMiddle, jBelowFeet)) {
-            cc.onGround = distanceToSlope(jBelowFeet) <= 0;
+            cc.onGround = distanceToSlope(jBelowFeet, tiles, pc, cc) <= 0;
 	    return;
         }
 
@@ -234,6 +229,19 @@ public class CollisionSubsystem() {
         cc.onOneWayPlatform = i > iMax && hasOneWay;
     }
 
-
+    public static int distanceToSlope(int j, Tiles tiles,
+				      PositionComponent pc,
+				      CollisionComponent cc) {
+        int pixMiddle = pc.x + ((cc.xBound - 1) / 2);
+        int iMiddle = tiles.pixToTile(pixMiddle);
+        
+        float progress = ((float) (pixMiddle - tiles.tileToPix(iMiddle))) /
+            tiles.getPixPerTile();
+        
+        return tiles.tileToPix(j) +
+            (int) (tiles.getLeftY(iMiddle, j) * (1.0 - progress) +
+                   tiles.getRightY(iMiddle, j) * progress)
+            - (pc.y + cc.yBound - 1);
+    }
 }
 

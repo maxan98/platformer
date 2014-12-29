@@ -25,7 +25,7 @@ public class Player {
 	PositionSubsystem.get().newComponent(id, pc);
 	
 	VelocityComponent vc = new VelocityComponent();
-	PositionSubsystem.get().newComponent(id, vc);
+	VelocitySubsystem.get().newComponent(id, vc);
 
 	FacingComponent fc = new FacingComponent();
 	fc.facing = 1;
@@ -85,7 +85,7 @@ public class Player {
         }
 
         if (input.isKeyDown(InputListener.DOWN)) {
-            if (currentlyOnGround && onOneWayPlatform()) {
+            if (cc.onGround && cc.onOneWayPlatform) {
                 dirtyPlayer();
                 pc.y += 1;
             }
@@ -114,6 +114,11 @@ public class Player {
     // at the start of the last jump
     public int lastGroundY() {
         return lastGroundY;
+    }
+
+    public boolean onGround() {
+	CollisionComponent cc = CollisionSubsystem.get().getComponent(id);
+	return cc.onGround;
     }
 
     public int getCenterX() {

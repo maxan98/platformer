@@ -1,4 +1,6 @@
-public class PositionSubsystem() {
+import java.util.Map;
+
+public class PositionSubsystem {
     // implement singleton pattern
     private static final PositionSubsystem singleton = new PositionSubsystem();
     private PositionSubsystem() {}
@@ -8,7 +10,7 @@ public class PositionSubsystem() {
 
     // Member variables
     private ComponentStore<PositionComponent> cs = new ComponentStore<PositionComponent>();
-
+  
     public PositionComponent getComponent(UniqueId id) {
 	return cs.get(id);
     }
@@ -18,19 +20,19 @@ public class PositionSubsystem() {
     }
 
     public void update() {
-	for (HashMap.Entry<UniqueId, PositionComponent> entry : cs.entrySet()) {
+	for (Map.Entry<UniqueId, PositionComponent> entry : cs.entrySet()) {
 	    UniqueId id = entry.getKey();
 	    PositionComponent pc = entry.getValue();
 	    
 	    pc.deltaX += pc.xRemainder;
 	    pc.x += (int) pc.deltaX;
 	    pc.xRemainder = pc.deltaX - (int) pc.deltaX;
-	    pc.deltaX = 0.0;
+	    pc.deltaX = 0;
 
 	    pc.deltaY += pc.yRemainder;
 	    pc.y += (int) pc.deltaY;
 	    pc.yRemainder = pc.deltaY - (int) pc.deltaY;
-	    pc.deltaY = 0.0;
+	    pc.deltaY = 0;
 	}
     }
 }

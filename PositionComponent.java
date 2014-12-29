@@ -1,4 +1,4 @@
-public class PositionComponent() {
+public class PositionComponent {
     public int x;
     public int y;
     public float xRemainder;

@@ -83,66 +83,74 @@ public class Tiles {
     }
 
     public void setDirty(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         board[x][y].dirty = true;
     }
 
     public boolean isEmpty(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return false;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].type == Tile.NON_SOLID;
 
     }
 
     public boolean isSolid(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return false;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].type == Tile.SOLID;
     }
 
     public boolean isSlope(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return false;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].type == Tile.SLOPE;
     }
 
     public boolean isOneWay(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return false;
-        }
+	assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].type == Tile.ONE_WAY;
     }
 
     public int getLeftY(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return 0;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].leftY;
     }
 
     public int getRightY(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return 0;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         return board[x][y].rightY;
     }
 
     public boolean slopesRight(int x, int y) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return false;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
         
         return getRightY(x,y) < getLeftY(x,y);
     }
@@ -150,14 +158,15 @@ public class Tiles {
     public boolean slopesLeft(int x, int y) { return !slopesRight(x,y); }
     
     public void setTile(int x, int y, int tileNum) {
-        if (x >= xTiles || y >= yTiles || x < 0 || y < 0) {
-            return;
-        }
+        assert x < xTiles;
+	assert y < yTiles;
+	assert x >= 0;
+	assert y >= 0;
 
         int maxTileNum = tileset.getNumTiles();
-        if (tileNum >= maxTileNum || tileNum < 0) {
-            return;
-        }
+	
+        assert tileNum < maxTileNum;
+	assert tileNum >= 0;
 
         board[x][y] = tileset.getNewTile(tileNum);
     }

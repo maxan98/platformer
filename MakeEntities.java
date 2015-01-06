@@ -23,6 +23,9 @@ public class MakeEntities {
 	SpriteSubsystem.get().newComponent(id, sc);
 
 	CollisionComponent cc = new CollisionComponent();
+	cc.collideWithTiles = true;
+	cc.collideWithEntities = true;
+	cc.solidToEntities = true;
 	CollisionSubsystem.get().newComponent(id, cc);
 
 	PhysicsComponent phyc = new PhysicsComponent();
@@ -67,6 +70,9 @@ public class MakeEntities {
 	SpriteSubsystem.get().newComponent(id, sc);
 
 	CollisionComponent cc = new CollisionComponent();
+	cc.collideWithTiles = true;
+	cc.collideWithEntities = true;
+	cc.solidToEntities = true;
 	CollisionSubsystem.get().newComponent(id, cc);
 
 	PhysicsComponent phyc = new PhysicsComponent();

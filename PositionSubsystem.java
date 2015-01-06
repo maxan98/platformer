@@ -46,7 +46,19 @@ public class PositionSubsystem {
         int iMax = tiles.pixToTile(pc.x + pc.xBound - 1);
         int jMin = tiles.pixToTile(pc.y);
         int jMax = tiles.pixToTile(pc.y + pc.yBound - 1);
-        
+
+	if (iMin >= tiles.getWidth() ||
+	    iMax < 0 ||
+	    jMin >= tiles.getHeight() ||
+	    jMax < 0) {
+	    return;
+	}
+
+	if (iMin < 0) iMin = 0;
+	if (iMax >= tiles.getWidth()) iMax = tiles.getWidth() - 1;
+	if (jMin < 0) jMin = 0;
+	if (jMax >= tiles.getHeight()) jMax = tiles.getHeight() - 1;
+
         for (int i = iMin; i <= iMax; i++) {
             for (int j = jMin; j <= jMax; j++) {
                 tiles.setDirty(i, j);
@@ -61,6 +73,14 @@ public class PositionSubsystem {
         int pixMiddle = pc.x + ((pc.xBound - 1) / 2);
         int iMiddle = tiles.pixToTile(pixMiddle);
         int jBelowFeet = tiles.pixToTile(pc.y + pc.yBound);
+
+	// If you're outside the map you're not on the ground.
+	if (iMin < 0 ||
+	    iMax >= tiles.getWidth() ||
+	    jBelowFeet >= tiles.getHeight()) {
+	    pc.onGround = false;
+	    return;
+	}
 
         if (tiles.isSlope(iMiddle, jBelowFeet)) {
             pc.onGround =
@@ -90,6 +110,14 @@ public class PositionSubsystem {
         int pixMiddle = pc.x + ((pc.xBound - 1) / 2);
         int iMiddle = tiles.pixToTile(pixMiddle);
         int jBelowFeet = tiles.pixToTile(pc.y + pc.yBound);
+
+	// If you're outside the map you're not on a platform.
+	if (iMin < 0 ||
+	    iMax >= tiles.getWidth() ||
+	    jBelowFeet >= tiles.getHeight()) {
+	    pc.onOneWayPlatform = false;
+	    return;
+	}
 
         int i;
         boolean hasOneWay = false;

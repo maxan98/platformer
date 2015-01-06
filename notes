@@ -1,4 +1,6 @@
-CES:
+2014-12-27
+
+CES
 
 An entity corresponds to a 'thing' in a game world. Concretely, an entity is a
 globally unique id, which maps to a set of components. For example, a player
@@ -49,3 +51,94 @@ Physics component.)
 Static helper methods could be created that will do the setup for common entity
 types - for example, a static "makeEnemy" method that initializes Position,
 Drawable, Physics, and AI components in the correct order.
+
+2015-01-06
+
+CES update and rethink
+
+I want ahead and implemented everything, and it was largely successful. I was
+able to tear apart the Entity and Player classes bit by bit, refactoring them
+into components and subsystems. The end result actually worked with no debugging
+- I did most of the refactoring in a massive +600-300 commit that I didn't so
+much as compile, fixed about 100 compiler errors, and then it worked. Amazingly,
+at the same time it fixed a subtle bug in the collision detection logic, where
+the player was "stuck" to slope peaks that had no flat area at the
+top. Unfortunately, after I did more refactoring the bug came back, and it's
+still unresolved...
+
+After eliminating the Entity and Player classes, and decoupling the input
+component from the control component (by having the input component handle
+keyboard input and then relay the result to the corresponding control component
+over a command queue), I was able to add AI-controlled entities by simply
+creating a (trivially simple) AI component that posted messages to the control
+component. There were no real issues with getting this to work, which I consider
+a success of the CES.
+
+However, I've now been working on Entity-entity collision detection, and it's
+starting to make clear some shortcomings of my design. Principally, I'm
+concerned about the difficulty of intra-component customization, and the
+currently ad-hoc nature of inter-component communication.
+
+
+Intra-component customization: 
+
+The CES system supports variation among entities through a lego system - adding
+or removing components customizes behavior. For example, in Mario games when an
+enemy is hit on the head, it responds by falling off the bottom of the
+level. This should be trivially implementable by simply removing the entity's
+collision detection component, which will make it plummet into oblivion. (A
+"cleanup" component can automatically remove entities that leave the boundaries
+of the map.) The current system supports this very well - entities are only
+defined implicitly by a unique ID, so they are infinitely customizable in this
+respect, even after they are already created.
+
+However, currently the only mechanism for defining varied behavior within a
+single component is embedding parameters in the component itself. This works
+well if the only variation needed is in tweaking a numeric value,
+or toggling a flag.
+
+For example, it makes sense (in video games, if not in real life) that different
+entities might be affected by gravity different amounts - a feather creature
+should fall slower than a cannonball. This is easily accomplished by putting
+"gravitational_acceleration" and "terminal_velocity" parameters in the Physics
+component, which the Physics code uses in lieue of hard coded values.
+
+In the case of a flag, it can make sense to use this method of customization as
+well. Take the example of entity-entity collision detection. It makes sense that
+some entities want both detection and resolution - when the player jumps on a
+Goomba, the collision must be detected so some appropriate game action can be
+taken, such as killing the Goomba. However, it is also necessary that the player
+not fall through the Goomba, so both the Goomba's and the Player's positions
+need to be adjusted. But what about a fireball that sweeps across the screen,
+passing through enemies and damaging each of them in turn? Collision detection
+is certainly needed for this, but resolution is not - the fireball just passes
+through each entity it hits. This could be implemented by having separate
+components for detection and resolution, but so much data would need to be
+passed between them, it makes just as much sense to have a flag on the collision
+detection component - if both entities in a collision are marked as solid, then
+they are not allowed to penetrate each other - otherwise, their collision is
+noted but no action is taken by the collision detection subsystem - they simply
+pass through each other.
+
+It's probably OK for a component to have any number of numeric parameters - it
+makes the code no more complicated and adds customization at little cost (except
+in memory). However, piling up a great number of flags will get unwieldy,
+especially if they interact with each other. An even bigger problem is when the
+customizations needed are fundamentally about behaviour, not data. For example,
+each entity may need to react to a collision in a different way. If a player
+collides with the top of a Goomba, the Goomba should fall off the screen and die
+and the player should be bounced upwards. If a player collides with the side of
+a Goomba, the player should be damaged and pushed backwards. If a fireball hits
+a ghost, the fireball should be unaffected while the ghost should explode... and
+so on, with each entity having different arbitrary behavior. Trying to do this
+all with data will get really complex - the Bytecode pattern from GPP comes to
+mind *shudder*. Such complexity might be justified if I wanted a team of game
+designers to be able to create thousands of varied enemies, but I would really
+like to be able to just write some simple code to represent different classes of
+enemies, without regressing into a giant monolithic class for each different entity.
+
+Phew, that was just the first problem!
+
+
+Inter-component communication:
+

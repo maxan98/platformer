@@ -142,3 +142,37 @@ Phew, that was just the first problem!
 
 Inter-component communication:
 
+It's a fact of life that components need to communicate. My initial idea was
+that components would be entirely encapsulated within their respective
+subsystems, with any required communication happening through method calls to
+the subsystem. This was rather naive of me - for example, the collision
+detection subsystem needs to access and modify the entity's position multiple
+times in every frame. Some parts of the engine are unavoidably tightly
+coupled. For most inter-component communication, I think directly modifying
+other components is the right choice. (An exception is the aforementioned
+Command stream between the Input/AI components and the Control component, which
+is naturally abstracted as a message queue - though it is implemented by having
+the sender append to a list of commands that the receiver owns and empties each
+frame.) Having the velocity component modify the position component by sending
+an "update position" message is, in my opinion, a little overengineered for this
+scale of game.
+
+What I want to do is to enable easy communication between components, but
+disallow arbitrary communication between ANY components. Each subsystem or
+component should clearly specify which other components it depends on, and not
+be allowed to communicate with or observe any others. The system should also
+enforce that the necessary components always exist - if Velocity depends on
+Position, then it should be an error to create an entity that has a Velocity but
+no Position.
+
+Right now, I accomplish this by giving each subsystem a component lookup method,
+that allows you to get the component corresponding to a particular id. When the
+velocity subsystem updates one of its components, it retrieves the corresponding
+position component, since it knows the velocity component's id, and then 
+
+
+for later: Instead of having each component know its ID (which would allow it to
+arbitrarily access any other component of its entity), give each component a
+pointer to the other components it needs to do its job. This avoids the huge
+overhead of having to do component lookups every frame, and requires explicitly
+specifying component dependencies

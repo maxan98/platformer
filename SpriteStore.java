@@ -14,7 +14,7 @@ public class SpriteStore {
     }
 
     // Member variables
-    private HashMap sprites = new HashMap();
+    private HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
     
     public Sprite getSprite(String ref) {
         if (sprites.get(ref) != null) {

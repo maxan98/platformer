@@ -64,7 +64,6 @@ public class Game extends Canvas {
 	// Check if filename exists
 	File f = new File("./assets/levels/" + filename);
 	if (f.exists() && !f.isDirectory()) {
-	    System.out.println("filename exists");
 	    this.tiles = new Tiles("./assets/levels/" + filename);
 	    this.xSize = tiles.getWidth() * tiles.getPixPerTile();
 	    this.ySize = tiles.getHeight() * tiles.getPixPerTile();

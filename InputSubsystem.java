@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class InputSubsystem {
@@ -10,40 +10,37 @@ public class InputSubsystem {
     }
 
     // Member variables
-    private ComponentStore<InputComponent> cs = new ComponentStore<InputComponent>();
+    private HashMap<UniqueId, InputComponent> componentStore =
+	new HashMap<UniqueId, InputComponent>();
 
     public InputComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, InputComponent ic) {
-	assert ControlSubsystem.get().getComponent(id) != null;
+	ic.ctrlc = ControlSubsystem.get().getComponent(id);
+
+	assert ic.ctrlc != null;
 	
-	cs.put(id, ic);
+	componentStore.put(id, ic);
     }
 
     public void update(InputListener input) {
-	for (Map.Entry<UniqueId, InputComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    InputComponent ic = entry.getValue();
-
-	    ControlComponent ctrlc = ControlSubsystem.get().getComponent(id);
-
-	    ctrlc.commands = new LinkedList<Command>();
+	for (InputComponent ic : componentStore.values()) {
 	    if (input.isKeyDown(InputListener.LEFT) && !input.isKeyDown(InputListener.RIGHT)) {
-		ctrlc.commands.addLast(Command.WALK_LEFT);
+		ic.ctrlc.commands.addLast(Command.WALK_LEFT);
 	    } else if (!input.isKeyDown(InputListener.LEFT) && input.isKeyDown(InputListener.RIGHT)) {
-		ctrlc.commands.addLast(Command.WALK_RIGHT);
+		ic.ctrlc.commands.addLast(Command.WALK_RIGHT);
 	    } else {
-		ctrlc.commands.addLast(Command.STOP);
+		ic.ctrlc.commands.addLast(Command.STOP);
 	    }
 
 	    if (input.isKeyDown(InputListener.DOWN)) {
-		ctrlc.commands.addLast(Command.DROP_DOWN);
+		ic.ctrlc.commands.addLast(Command.DROP_DOWN);
 	    }
 
 	    if (input.isKeyDown(InputListener.JUMP)) {
-		ctrlc.commands.addLast(Command.JUMP);
+		ic.ctrlc.commands.addLast(Command.JUMP);
 	    }
 	}
     }

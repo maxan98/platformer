@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 
 public class VelocitySubsystem {
     // implement singleton pattern
@@ -9,26 +9,25 @@ public class VelocitySubsystem {
     }
 
     // Member variables
-    private ComponentStore<VelocityComponent> cs = new ComponentStore<VelocityComponent>();
+    private HashMap<UniqueId, VelocityComponent> componentStore =
+	new HashMap<UniqueId, VelocityComponent>();
 
     public VelocityComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, VelocityComponent vc) {
-	assert PositionSubsystem.get().getComponent(id) != null;
+	vc.pc = PositionSubsystem.get().getComponent(id);
 	
-	cs.put(id, vc);
+	assert vc.pc != null;
+	
+	componentStore.put(id, vc);
     }
 
     public void update(long delta) {
-	for (Map.Entry<UniqueId, VelocityComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    VelocityComponent vc = entry.getValue();
-	    
-	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
-	    pc.deltaX = ((float) (delta * vc.dx)) / 1000;
-	    pc.deltaY = ((float) (delta * vc.dy)) / 1000;	    
+	for (VelocityComponent vc : componentStore.values()) {
+	    vc.pc.deltaX = ((float) (delta * vc.dx)) / 1000;
+	    vc.pc.deltaY = ((float) (delta * vc.dy)) / 1000;	    
 	}
     }
 }

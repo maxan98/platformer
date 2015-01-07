@@ -1,5 +1,5 @@
-import java.awt.*;
-import java.util.Map;
+import java.awt.Graphics;
+import java.util.HashMap;
 
 public class SpriteSubsystem {
     // implement singleton pattern
@@ -10,24 +10,24 @@ public class SpriteSubsystem {
     }
 
     // Member variables
-    private ComponentStore<SpriteComponent> cs = new ComponentStore<SpriteComponent>();
+    private HashMap<UniqueId, SpriteComponent> componentStore =
+	new HashMap<UniqueId, SpriteComponent>();
 
     public SpriteComponent getComponent(UniqueId id) {
-	assert PositionSubsystem.get().getComponent(id) != null;
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, SpriteComponent sc) {
-	cs.put(id, sc);
+	sc.pc = PositionSubsystem.get().getComponent(id);
+
+	assert sc.pc != null;
+
+	componentStore.put(id, sc);
     }
 
     public void update(Graphics g) {
-	for (Map.Entry<UniqueId, SpriteComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    SpriteComponent sc = entry.getValue();
-	    
-	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
-	    sc.sprite.draw(g, pc.x, pc.y);
+	for (SpriteComponent sc : componentStore.values()) {
+	    sc.sprite.draw(g, sc.pc.x, sc.pc.y);
 	}
     }
 }

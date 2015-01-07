@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 
 public class ControlSubsystem {
     // implement singleton pattern
@@ -9,61 +9,60 @@ public class ControlSubsystem {
     }
 
     // Member variables
-    private ComponentStore<ControlComponent> cs = new ComponentStore<ControlComponent>();
+    private HashMap<UniqueId, ControlComponent> componentStore =
+	new HashMap<UniqueId, ControlComponent>();
 
     public ControlComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, ControlComponent ctrlc) {
-	assert PhysicsSubsystem.get().getComponent(id) != null;	
-	assert PositionSubsystem.get().getComponent(id) != null;
-	assert VelocitySubsystem.get().getComponent(id) != null;
-	
-	cs.put(id, ctrlc);
+	ctrlc.pc = PositionSubsystem.get().getComponent(id);
+	ctrlc.vc = VelocitySubsystem.get().getComponent(id);
+	ctrlc.phyc = PhysicsSubsystem.get().getComponent(id);
+
+	assert ctrlc.pc != null;
+	assert ctrlc.vc != null;
+	assert ctrlc.phyc != null;
+
+	componentStore.put(id, ctrlc);
     }
 
     public void update(long delta) {
-	for (Map.Entry<UniqueId, ControlComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    ControlComponent ctrlc = entry.getValue();
-
-	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
-	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
-	    PhysicsComponent phyc = PhysicsSubsystem.get().getComponent(id);
+	for (ControlComponent ctrlc : componentStore.values()) {
 	    
-	    if (pc.onGround) {
-		ctrlc.lastGroundY = pc.y + pc.yBound;
+	    if (ctrlc.pc.onGround) {
+		ctrlc.lastGroundY = ctrlc.pc.y + ctrlc.pc.yBound;
 	    }
-
+	    
 	    for (Command command : ctrlc.commands) {
 		switch (command) {
 		case DROP_DOWN:
-		    if (pc.onGround && pc.onOneWayPlatform) {
-			pc.y += 1;
+		    if (ctrlc.pc.onGround && ctrlc.pc.onOneWayPlatform) {
+			ctrlc.pc.y += 1;
 		    }
 		    break;
 		case JUMP:
-		    if (pc.onGround && vc.dy >= 0) {
-			vc.dy = -ctrlc.jumpImpulse;
+		    if (ctrlc.pc.onGround && ctrlc.vc.dy >= 0) {
+			ctrlc.vc.dy = -ctrlc.jumpImpulse;
 			ctrlc.hangTime = 0;
 		    } else if (ctrlc.hangTime < ctrlc.maxHangTime) {
-			vc.dy -= delta * ctrlc.jumpExtra / 1000;
+			ctrlc.vc.dy -= delta * ctrlc.jumpExtra / 1000;
 			ctrlc.hangTime += (float) delta / 1000;
 		    }
 		    break;
 		case STOP:
-		    phyc.targetDx = 0;
+		    ctrlc.phyc.targetDx = 0;
 		    break;
 		case WALK_LEFT:
-		    phyc.targetDx = -1 * ctrlc.maxSpeed;
+		    ctrlc.phyc.targetDx = -1 * ctrlc.maxSpeed;
 		    break;
 		case WALK_RIGHT:
-		    phyc.targetDx = ctrlc.maxSpeed;
+		    ctrlc.phyc.targetDx = ctrlc.maxSpeed;
 		    break;
 		}
 	    }
-	    ctrlc.commands = null;
+	    ctrlc.commands.clear();
 	}
     }
 }

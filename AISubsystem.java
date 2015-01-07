@@ -1,5 +1,4 @@
-import java.util.Map;
-import java.util.LinkedList;
+import java.util.HashMap;
 
 public class AISubsystem {
     // implement singleton pattern
@@ -10,38 +9,34 @@ public class AISubsystem {
     }
 
     // Member variables
-    private ComponentStore<AIComponent> cs = new ComponentStore<AIComponent>();
+    private HashMap<UniqueId, AIComponent> componentStore = new HashMap<UniqueId, AIComponent>();
 
     public AIComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, AIComponent aic) {
-	assert ControlSubsystem.get().getComponent(id) != null;
-	assert CollisionSubsystem.get().getComponent(id) != null;	
+	aic.ctrlc = ControlSubsystem.get().getComponent(id);
+	aic.cc = CollisionSubsystem.get().getComponent(id);
+
+	assert aic.ctrlc != null;
+	assert aic.cc != null;
 	
-	cs.put(id, aic);
+	componentStore.put(id, aic);
     }
 
     public void update() {
-	for (Map.Entry<UniqueId, AIComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    AIComponent aic = entry.getValue();
-
-	    ControlComponent ctrlc = ControlSubsystem.get().getComponent(id);
-	    CollisionComponent cc = CollisionSubsystem.get().getComponent(id);
-
-	    if (cc.hitWall) {
+	for (AIComponent aic : componentStore.values()) {
+	    if (aic.cc.hitWall) {
 		aic.walkingDirection *= -1;
 	    }
 
-	    ctrlc.commands = new LinkedList<Command>();
 	    if (aic.walkingDirection < 0) {
-		ctrlc.commands.addLast(Command.WALK_LEFT);
+		aic.ctrlc.commands.addLast(Command.WALK_LEFT);
 	    } else if (aic.walkingDirection > 0) {
-		ctrlc.commands.addLast(Command.WALK_RIGHT);
+		aic.ctrlc.commands.addLast(Command.WALK_RIGHT);
 	    } else {
-		ctrlc.commands.addLast(Command.STOP);
+		aic.ctrlc.commands.addLast(Command.STOP);
 	    }
 	}
     }

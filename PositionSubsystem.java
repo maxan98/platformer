@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 
 public class PositionSubsystem {
     // implement singleton pattern
@@ -9,20 +9,19 @@ public class PositionSubsystem {
     }
 
     // Member variables
-    private ComponentStore<PositionComponent> cs = new ComponentStore<PositionComponent>();
+    private HashMap<UniqueId, PositionComponent> componentStore =
+	new HashMap<UniqueId, PositionComponent>();
   
     public PositionComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, PositionComponent pc) {
-	cs.put(id, pc);
+	componentStore.put(id, pc);
     }
 
     public void update(Tiles tiles) {
-	for (Map.Entry<UniqueId, PositionComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    PositionComponent pc = entry.getValue();
+	for (PositionComponent pc : componentStore.values()) {
 	    
 	    redirtyTiles(tiles, pc);
 

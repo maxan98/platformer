@@ -3,4 +3,6 @@ public class AIComponent {
     // < 0: left
     //   0: stand still
     public int walkingDirection;
+    public ControlComponent ctrlc;
+    public CollisionComponent cc;
 }

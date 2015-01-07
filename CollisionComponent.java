@@ -15,4 +15,7 @@ public class CollisionComponent {
     // Did the entity hit a wall this turn? Only set if collideWithTiles is
     // true.
     public boolean hitWall;
+
+    public PositionComponent pc;
+    public VelocityComponent vc;
 }

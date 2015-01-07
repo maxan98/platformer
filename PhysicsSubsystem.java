@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 
 public class PhysicsSubsystem {
     // implement singleton pattern
@@ -9,55 +9,54 @@ public class PhysicsSubsystem {
     }
 
     // Member variables
-    private ComponentStore<PhysicsComponent> cs = new ComponentStore<PhysicsComponent>();
+    private HashMap<UniqueId, PhysicsComponent> componentStore =
+	new HashMap<UniqueId, PhysicsComponent>();
 
     public PhysicsComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
-    public void newComponent(UniqueId id, PhysicsComponent pc) {
-	assert VelocitySubsystem.get().getComponent(id) != null;
-	assert PositionSubsystem.get().getComponent(id) != null;
+    public void newComponent(UniqueId id, PhysicsComponent phyc) {
+	phyc.pc = PositionSubsystem.get().getComponent(id);
+	phyc.vc = VelocitySubsystem.get().getComponent(id);
 	
-	cs.put(id, pc);
+	assert phyc.pc != null;
+	assert phyc.vc != null;
+
+	componentStore.put(id, phyc);
     }
 
     public void update(long delta) {
-	for (Map.Entry<UniqueId, PhysicsComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    PhysicsComponent phyc = entry.getValue();
-	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
-	    PositionComponent pc = PositionSubsystem.get().getComponent(id);
-
-	    if (phyc.gravityAffected && !pc.onGround) {
+	for (PhysicsComponent phyc : componentStore.values()) {
+	    if (phyc.gravityAffected && !phyc.pc.onGround) {
 		phyc.targetDy = phyc.terminalVelocity;
 	    }
 
-	    if (vc.dx < phyc.targetDx) {
-		if (pc.onGround) {
-		    vc.dx += phyc.xAcceleration * delta / 1000;
+	    if (phyc.vc.dx < phyc.targetDx) {
+		if (phyc.pc.onGround) {
+		    phyc.vc.dx += phyc.xAcceleration * delta / 1000;
 		} else {
-		    vc.dx += 0.5 * phyc.xAcceleration * delta / 1000;
+		    phyc.vc.dx += 0.5 * phyc.xAcceleration * delta / 1000;
 		}
 
-		if (vc.dx > phyc.targetDx) vc.dx = phyc.targetDx;
+		if (phyc.vc.dx > phyc.targetDx) phyc.vc.dx = phyc.targetDx;
 
-	    } else if (vc.dx > phyc.targetDx) {
-		if (pc.onGround) {
-		    vc.dx -= phyc.xAcceleration * delta / 1000;
+	    } else if (phyc.vc.dx > phyc.targetDx) {
+		if (phyc.pc.onGround) {
+		    phyc.vc.dx -= phyc.xAcceleration * delta / 1000;
 		} else {
-		    vc.dx -= 0.5 * phyc.xAcceleration * delta / 1000;
+		    phyc.vc.dx -= 0.5 * phyc.xAcceleration * delta / 1000;
 		}
 
-		if (vc.dx < phyc.targetDx) vc.dx = phyc.targetDx;
+		if (phyc.vc.dx < phyc.targetDx) phyc.vc.dx = phyc.targetDx;
 	    }
 
-	    if (vc.dy < phyc.targetDy) {
-		vc.dy += phyc.yAcceleration * delta / 1000;
-		if (vc.dy > phyc.targetDy) vc.dy = phyc.targetDy;
-	    } else if (vc.dy > phyc.targetDy) {
-		vc.dy -= phyc.yAcceleration * delta / 1000;
-		if (vc.dy < phyc.targetDy) vc.dy = phyc.targetDy;
+	    if (phyc.vc.dy < phyc.targetDy) {
+		phyc.vc.dy += phyc.yAcceleration * delta / 1000;
+		if (phyc.vc.dy > phyc.targetDy) phyc.vc.dy = phyc.targetDy;
+	    } else if (phyc.vc.dy > phyc.targetDy) {
+		phyc.vc.dy -= phyc.yAcceleration * delta / 1000;
+		if (phyc.vc.dy < phyc.targetDy) phyc.vc.dy = phyc.targetDy;
 	    }
 	}
     }

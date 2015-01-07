@@ -1,4 +1,4 @@
-import java.util.Map;
+import java.util.HashMap;
 
 public class FacingSubsystem {
     // implement singleton pattern
@@ -9,27 +9,26 @@ public class FacingSubsystem {
     }
 
     // Member variables
-    private ComponentStore<FacingComponent> cs = new ComponentStore<FacingComponent>();
+    private HashMap<UniqueId, FacingComponent> componentStore =
+	new HashMap<UniqueId, FacingComponent>();
 
     public FacingComponent getComponent(UniqueId id) {
-	return cs.get(id);
+	return componentStore.get(id);
     }
 
     public void newComponent(UniqueId id, FacingComponent fc) {
-	assert VelocitySubsystem.get().getComponent(id) != null;
+	fc.vc = VelocitySubsystem.get().getComponent(id);
+
+	assert fc.vc != null;
 	
-	cs.put(id, fc);
+	componentStore.put(id, fc);
     }
 
     public void update() {
-	for (Map.Entry<UniqueId, FacingComponent> entry : cs.entrySet()) {
-	    UniqueId id = entry.getKey();
-	    FacingComponent fc = entry.getValue();
-	    
-	    VelocityComponent vc = VelocitySubsystem.get().getComponent(id);
-	    if (vc.dx > 0) {
+	for (FacingComponent fc : componentStore.values()) {
+	    if (fc.vc.dx > 0) {
 		fc.facing = 1;
-	    } else if (vc.dx < 0) {
+	    } else if (fc.vc.dx < 0) {
 		fc.facing = -1;
 	    }
 	}

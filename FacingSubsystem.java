@@ -26,11 +26,7 @@ public class FacingSubsystem {
 
     public void update() {
 	for (FacingComponent fc : componentStore.values()) {
-	    if (fc.vc.dx > 0) {
-		fc.facing = 1;
-	    } else if (fc.vc.dx < 0) {
-		fc.facing = -1;
-	    }
+	    fc.update();
 	}
     }
 }

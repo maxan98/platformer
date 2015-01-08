@@ -28,36 +28,7 @@ public class PhysicsSubsystem {
 
     public void update(long delta) {
 	for (PhysicsComponent phyc : componentStore.values()) {
-	    if (phyc.gravityAffected && !phyc.pc.onGround) {
-		phyc.targetDy = phyc.terminalVelocity;
-	    }
-
-	    if (phyc.vc.dx < phyc.targetDx) {
-		if (phyc.pc.onGround) {
-		    phyc.vc.dx += phyc.xAcceleration * delta / 1000;
-		} else {
-		    phyc.vc.dx += 0.5 * phyc.xAcceleration * delta / 1000;
-		}
-
-		if (phyc.vc.dx > phyc.targetDx) phyc.vc.dx = phyc.targetDx;
-
-	    } else if (phyc.vc.dx > phyc.targetDx) {
-		if (phyc.pc.onGround) {
-		    phyc.vc.dx -= phyc.xAcceleration * delta / 1000;
-		} else {
-		    phyc.vc.dx -= 0.5 * phyc.xAcceleration * delta / 1000;
-		}
-
-		if (phyc.vc.dx < phyc.targetDx) phyc.vc.dx = phyc.targetDx;
-	    }
-
-	    if (phyc.vc.dy < phyc.targetDy) {
-		phyc.vc.dy += phyc.yAcceleration * delta / 1000;
-		if (phyc.vc.dy > phyc.targetDy) phyc.vc.dy = phyc.targetDy;
-	    } else if (phyc.vc.dy > phyc.targetDy) {
-		phyc.vc.dy -= phyc.yAcceleration * delta / 1000;
-		if (phyc.vc.dy < phyc.targetDy) phyc.vc.dy = phyc.targetDy;
-	    }
+	    phyc.update(delta);
 	}
     }
 }

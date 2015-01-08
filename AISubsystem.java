@@ -27,17 +27,7 @@ public class AISubsystem {
 
     public void update() {
 	for (AIComponent aic : componentStore.values()) {
-	    if (aic.cc.hitWall) {
-		aic.walkingDirection *= -1;
-	    }
-
-	    if (aic.walkingDirection < 0) {
-		aic.ctrlc.commands.addLast(Command.WALK_LEFT);
-	    } else if (aic.walkingDirection > 0) {
-		aic.ctrlc.commands.addLast(Command.WALK_RIGHT);
-	    } else {
-		aic.ctrlc.commands.addLast(Command.STOP);
-	    }
+	    aic.update();
 	}
     }
 }

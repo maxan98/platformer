@@ -26,8 +26,7 @@ public class VelocitySubsystem {
 
     public void update(long delta) {
 	for (VelocityComponent vc : componentStore.values()) {
-	    vc.pc.deltaX = ((float) (delta * vc.dx)) / 1000;
-	    vc.pc.deltaY = ((float) (delta * vc.dy)) / 1000;	    
+	    vc.update(delta);
 	}
     }
 }

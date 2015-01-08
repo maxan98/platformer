@@ -27,7 +27,7 @@ public class SpriteSubsystem {
 
     public void update(Graphics g) {
 	for (SpriteComponent sc : componentStore.values()) {
-	    sc.sprite.draw(g, sc.pc.x, sc.pc.y);
+	    sc.update(g);
 	}
     }
 }

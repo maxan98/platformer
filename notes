@@ -168,11 +168,83 @@ no Position.
 Right now, I accomplish this by giving each subsystem a component lookup method,
 that allows you to get the component corresponding to a particular id. When the
 velocity subsystem updates one of its components, it retrieves the corresponding
-position component, since it knows the velocity component's id, and then 
+position component, since it knows the entity id, and then reads and modifies it
+as needed. This is inefficient, and relies on the honor system to avoid
+arbitrary inter-component dependencies.
 
 
-for later: Instead of having each component know its ID (which would allow it to
-arbitrarily access any other component of its entity), give each component a
-pointer to the other components it needs to do its job. This avoids the huge
-overhead of having to do component lookups every frame, and requires explicitly
-specifying component dependencies
+Solutions:
+
+The inter-component communication problem is easy. Instead of having each
+component know its ID (which would allow it to arbitrarily access any other
+component of its entity), give each component a pointer to the other components
+it needs to do its job. This avoids the huge overhead of having to do component
+lookups every frame, and requires explicitly specifying component dependencies
+in the component objects themselves. The component pointers are initialized when
+the dependent component is created, so we can fail fast if dependent components
+are not present. This also makes circular component dependencies impossible - if
+there are circular dependencies, it will be impossible to create components in a
+suitable order.
+
+The intra-component customization problem is best solved in my opinion by
+refactoring the CES to be component focused, rather than subsystem
+focused. Right now, the components are just dumb containers, and all logic is in
+the subsystem. I think I naturally jumped to this solution because it's the way
+I would solve this problem in a language like C, but it's very unidiomatic for
+an object oriented language. By moving all possible logic out of the subsystem
+and into the component, behaviour will be encapsulated together with data. This
+allows customizing component behaviour by subclassing components. For example,
+the base collision component could handle the actual detection and resolution
+logic, but include a virtual "react to collision" method. Subclasses would
+implement this method to take appropriate actions - like a Goomba checking if it
+was jumped on and dying appropriately.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

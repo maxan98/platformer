@@ -30,39 +30,7 @@ public class ControlSubsystem {
 
     public void update(long delta) {
 	for (ControlComponent ctrlc : componentStore.values()) {
-	    
-	    if (ctrlc.pc.onGround) {
-		ctrlc.lastGroundY = ctrlc.pc.y + ctrlc.pc.yBound;
-	    }
-	    
-	    for (Command command : ctrlc.commands) {
-		switch (command) {
-		case DROP_DOWN:
-		    if (ctrlc.pc.onGround && ctrlc.pc.onOneWayPlatform) {
-			ctrlc.pc.y += 1;
-		    }
-		    break;
-		case JUMP:
-		    if (ctrlc.pc.onGround && ctrlc.vc.dy >= 0) {
-			ctrlc.vc.dy = -ctrlc.jumpImpulse;
-			ctrlc.hangTime = 0;
-		    } else if (ctrlc.hangTime < ctrlc.maxHangTime) {
-			ctrlc.vc.dy -= delta * ctrlc.jumpExtra / 1000;
-			ctrlc.hangTime += (float) delta / 1000;
-		    }
-		    break;
-		case STOP:
-		    ctrlc.phyc.targetDx = 0;
-		    break;
-		case WALK_LEFT:
-		    ctrlc.phyc.targetDx = -1 * ctrlc.maxSpeed;
-		    break;
-		case WALK_RIGHT:
-		    ctrlc.phyc.targetDx = ctrlc.maxSpeed;
-		    break;
-		}
-	    }
-	    ctrlc.commands.clear();
+	    ctrlc.update(delta);
 	}
     }
 }

@@ -16,8 +16,18 @@ public class CollisionComponent {
     // true.
     public boolean hitWall;
 
+    // If we immediately zero the velocity upon collision with something, then
+    // that mucks with later collision detection. So we wait until the very end.
+    private boolean zeroDxAtEndOfUpdate;
+    private boolean zeroDyAtEndOfUpdate;
+
     public PositionComponent pc;
     public VelocityComponent vc;
+
+    public void prework() {
+	zeroDxAtEndOfUpdate = false;	
+	zeroDyAtEndOfUpdate = false;
+    }
 
     public void checkCollisionWithTiles(Tiles tiles) {
 	if (!collideWithTiles) return;
@@ -57,7 +67,7 @@ public class CollisionComponent {
 	    int distanceToObstacle = tiles.tileToPix(i) - (pc.x + pc.xBound);
 	    if (distanceToObstacle < pc.deltaX) {
 		pc.deltaX = (float) distanceToObstacle;
-		vc.dx = 0;
+		zeroDxAtEndOfUpdate = true;
 		hitWall = true;
 	    }
 	} else if (pc.deltaX < 0) {
@@ -86,7 +96,7 @@ public class CollisionComponent {
 	    int distanceToObstacle = tiles.tileToPix(i) + tiles.getPixPerTile() - pc.x;
 	    if (distanceToObstacle > pc.deltaX) {
 		pc.deltaX = (float) distanceToObstacle;
-		vc.dx = 0;
+		zeroDxAtEndOfUpdate = true;
 		hitWall = true;
 	    }
 	}
@@ -169,7 +179,7 @@ public class CollisionComponent {
 	    if (collision) {
 		pc.deltaY = (float) distanceToObstacle;
 		pc.yRemainder = 0;
-		vc.dy = 0;
+		zeroDyAtEndOfUpdate = true;
 	    }
 	} else if (pc.deltaY < 0) {
 	    int j = jMin - 1;
@@ -186,7 +196,7 @@ public class CollisionComponent {
 	    if (distanceToObstacle > pc.deltaY && distanceToObstacle <= 0) {
 		pc.deltaY = (float) distanceToObstacle;
 		pc.yRemainder = 0;
-		vc.dy = 0;
+		zeroDyAtEndOfUpdate = true;
 	    }
 	}
     }
@@ -197,71 +207,51 @@ public class CollisionComponent {
 
 	// First we compute the bounding boxes that the two entities are projected to
 	// occupy on at the end of the current frame.
-	float xMin1 = this.pc.x + this.pc.deltaX + this.pc.xRemainder;
-	float xMax1 = xMin1 + this.pc.xBound;
-	float yMin1 = this.pc.y + this.pc.deltaY + this.pc.yRemainder;
-	float yMax1 = yMin1 + this.pc.yBound;
-	float xMin2 = that.pc.x + that.pc.deltaX + that.pc.xRemainder;
-	float xMax2 = xMin2 + that.pc.xBound;
-	float yMin2 = that.pc.y + that.pc.deltaY + that.pc.yRemainder;
-	float yMax2 = yMin2 + that.pc.yBound;
+	float xFinalMin1 = this.pc.x + this.pc.deltaX + this.pc.xRemainder;
+	float xFinalMax1 = xFinalMin1 + this.pc.xBound;
+	float yFinalMin1 = this.pc.y + this.pc.deltaY + this.pc.yRemainder;
+	float yFinalMax1 = yFinalMin1 + this.pc.yBound;
+	float xFinalMin2 = that.pc.x + that.pc.deltaX + that.pc.xRemainder;
+	float xFinalMax2 = xFinalMin2 + that.pc.xBound;
+	float yFinalMin2 = that.pc.y + that.pc.deltaY + that.pc.yRemainder;
+	float yFinalMax2 = yFinalMin2 + that.pc.yBound;
 
 	// Next we figure out whether the bounding boxes overlap.
-	if (xMax1 > xMin2 &&
-	    xMax2 > xMin1 &&
-	    yMax1 > yMin2 &&
-	    yMax2 > yMin1) {
-	    
-	    // Collision direction - positive xDirection means that the right
-	    // side of entity 1 touched the left side of entity 2, and
-	    // so forth.
-	    float xDirection = this.pc.deltaX - that.pc.deltaX;
-	    float yDirection = this.pc.deltaY - that.pc.deltaY;
-	    
-	    // Displacement - how much would they have to be transposed along a
-	    // given axis to make them not collide?
-	    float xDisplacement;
-	    float yDisplacement;
-	    if (xDirection > 0) {
-		xDisplacement = xMax1 - xMin2;
-	    } else {
-		xDisplacement = xMin1 - xMax2;
-	    }
-	    
-	    if (yDirection > 0) {
-		yDisplacement = yMax1 - yMin2;
-	    } else {
-		yDisplacement = yMin1 - yMax2;
-	    }
+	if (xFinalMax1 > xFinalMin2 &&
+	    xFinalMax2 > xFinalMin1 &&
+	    yFinalMax1 > yFinalMin2 &&
+	    yFinalMax2 > yFinalMin1) {
 
-	    // Move both entities just far enough to separate them, along the x
-	    // or y axis depending on which requires a smaller displacement.
-	    if (Math.abs(xDisplacement) < Math.abs(yDisplacement)) {
-		float xMultiple = xDisplacement / xDirection;
-		if (this.solidToEntities && that.solidToEntities) {
-		    this.pc.deltaX -= this.pc.deltaX * xMultiple;
-		    that.pc.deltaX -= that.pc.deltaX * xMultiple;
-		    this.vc.dx = 0;
-		    that.vc.dx = 0;
-		}
-	    } else {
-		float yMultiple = yDisplacement / yDirection;
-		System.out.printf("delta1: %f, delta2: %f\n",
-				  this.pc.deltaY, that.pc.deltaY);
-		System.out.printf("Displacement: %f\n", yDisplacement);
-		System.out.printf("Direction: %f\n", yDirection);
-		System.out.printf("Multiple: %f\n", yMultiple);
-		if (this.solidToEntities && that.solidToEntities) {
-		    this.pc.deltaY -= this.pc.deltaY * yMultiple;
-		    that.pc.deltaY -= that.pc.deltaY * yMultiple;
-		    System.out.printf("delta1: %f, delta2: %f\n",
-				      this.pc.deltaY, that.pc.deltaY);
-		    
-		    this.vc.dy = 0;
-		    that.vc.dy = 0;
-		}
-	    }
+	    // Our strategy for collision resolution is to essentially "go back
+	    // in time" by walking backwards along both entities' velocity
+	    // vectors. For each dimension (x and y), we calculate:
+	    // 
+	    // * In which direction will the entities separate along this axis?
+	    //   I.e. if 1.dx > 0 and 2.dx < 0, then when both are played
+	    //   backwards 1 will end up to the left of 2. This gives us our
+	    //   boundary condition - in this case, that the right edge of 1
+	    //   should just be touching the left edge of 2.
+	    // 
+	    // * What multiple of the time step we need to play backwards to
+	    //   separate the two along this dimension. I.e. if 1.dx = 2 and
+	    //   2.dx = -4, and they were overlapping by 3 units, then we would
+	    //   need to go back in time by a factor of 0.5.
+	    //
+	    // After doing this for x and y, we compare the factors, and choose
+	    // the smallest one. If the smallest one is greater than one, this
+	    // indicates that they were colliding the previous frame as well. 
+	    // In this case, just separate them by the nearest route possible.
 	}
+    }
+
+    public void postwork() {
+	if (zeroDxAtEndOfUpdate) {
+	    vc.dx = 0;
+	}
+	if (zeroDyAtEndOfUpdate) {
+	    vc.dy = 0;
+	}
+	
     }
 
     public static int distanceToSlope(int j, Tiles tiles,

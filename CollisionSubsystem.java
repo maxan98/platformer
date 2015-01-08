@@ -30,6 +30,14 @@ public class CollisionSubsystem {
     }
 
     public void update(Tiles tiles) {
+	for (CollisionComponent cc : componentStore.values()) {
+	    cc.prework();
+	}
+
+	for (CollisionComponent cc : componentStore.values()) {
+	    cc.checkCollisionWithTiles(tiles);
+	}
+
 	for (Map.Entry<UniqueId, CollisionComponent> entry1 : componentStore.entrySet()) {
 	    UniqueId id1 = entry1.getKey();
 	    CollisionComponent cc1 = entry1.getValue();
@@ -62,7 +70,7 @@ public class CollisionSubsystem {
 	}
 
 	for (CollisionComponent cc : componentStore.values()) {
-	    cc.checkCollisionWithTiles(tiles);
+	    cc.postwork();
 	}
     }
 }

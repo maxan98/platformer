@@ -27,7 +27,7 @@ public class ControlComponent {
 		}
 		break;
 	    case JUMP:
-		if (pc.onGround && vc.dy >= 0) {
+		if ((pc.onGround || pc.onEntity) && vc.dy >= 0) {
 		    vc.dy = -jumpImpulse;
 		    hangTime = 0;
 		} else if (hangTime < maxHangTime) {

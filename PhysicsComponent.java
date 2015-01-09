@@ -10,7 +10,7 @@ public class PhysicsComponent {
     public VelocityComponent vc;
 
     public void update(long delta) {
-	if (gravityAffected && !pc.onGround) {
+	if (gravityAffected && !pc.onGround && !pc.onEntity) {
 	    targetDy = terminalVelocity;
 	}
 

@@ -11,6 +11,7 @@ public class PositionComponent {
     public float deltaY;
     public boolean onGround;
     public boolean onOneWayPlatform;
+    public boolean onEntity;
 
     public void update(Tiles tiles) {
 	redirtyTiles(tiles);

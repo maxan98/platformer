@@ -82,7 +82,7 @@ public class MakeEntities {
 	PhysicsSubsystem.get().newComponent(id, phyc);
 
 	ControlComponent ctrlc = new ControlComponent();
-	ctrlc.maxSpeed = 150;
+	ctrlc.maxSpeed = 100;
 	ctrlc.jumpImpulse = 375;
 	ctrlc.jumpExtra = 1000;
 	ctrlc.maxHangTime = (float) 0.3;

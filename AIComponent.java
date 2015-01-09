@@ -8,7 +8,7 @@ public class AIComponent {
     public CollisionComponent cc;
 
     public void update() {
-	if (cc.hitWall) {
+	if (cc.hitWall || cc.hitEntity) {
 	    walkingDirection *= -1;
 	}
 

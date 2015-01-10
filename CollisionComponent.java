@@ -303,6 +303,8 @@ public class CollisionComponent {
 		// rocket one of the entities off of the map, so instead we
 		// just shunt them off in the nearest way possible.
 
+		System.out.println("Playback factors too high");
+
 		int shuntPosXDist = xFinalMax1 - xFinalMin2;
 		int shuntNegXDist = xFinalMax2 - xFinalMin1;
 		int shuntPosYDist = yFinalMax1 - yFinalMin2;
@@ -311,8 +313,8 @@ public class CollisionComponent {
 		if (shuntPosXDist < shuntNegXDist &&
 		    shuntPosXDist < shuntPosYDist &&
 		    shuntPosXDist < shuntNegYDist) {
- 		    that.pc.deltaX += 0.5 * shuntPosXDist;
-		    this.pc.deltaX -= 0.5 * shuntPosXDist;
+ 		    that.finalDeltaX += 0.5 * shuntPosXDist;
+		    this.finalDeltaX -= 0.5 * shuntPosXDist;
 
 		    this.hitEntity = true;
 		    that.hitEntity = true;
@@ -320,8 +322,8 @@ public class CollisionComponent {
 		else if (shuntNegXDist < shuntPosXDist &&
 			 shuntNegXDist < shuntPosYDist &&
 			 shuntNegXDist < shuntNegYDist) {
-		    this.pc.deltaX += 0.5 * shuntNegXDist;
-		    that.pc.deltaX -= 0.5 * shuntNegXDist;
+		    this.finalDeltaX += 0.5 * shuntNegXDist;
+		    that.finalDeltaX -= 0.5 * shuntNegXDist;
 
 		    this.hitEntity = true;
 		    that.hitEntity = true;
@@ -329,8 +331,8 @@ public class CollisionComponent {
 		else if (shuntPosYDist < shuntPosXDist &&
 			 shuntPosYDist < shuntNegXDist &&
 			 shuntPosYDist < shuntNegYDist) {
- 		    that.pc.deltaY += 0.5 * shuntPosYDist;
-		    this.pc.deltaY -= 0.5 * shuntPosYDist;
+ 		    that.finalDeltaY += 0.5 * shuntPosYDist;
+		    this.finalDeltaY -= 0.5 * shuntPosYDist;
 
 		    if (that.pc.onGround || that.pc.onEntity) {
 			this.finalOnEntity = true;
@@ -339,8 +341,8 @@ public class CollisionComponent {
 		    this.zeroDyAtEndOfUpdate = true;
 		    that.zeroDyAtEndOfUpdate = true;
 		} else {
-		    this.pc.deltaY += 0.5 * shuntNegYDist;
-		    that.pc.deltaY -= 0.5 * shuntNegYDist;
+		    this.finalDeltaY += 0.5 * shuntNegYDist;
+		    that.finalDeltaY -= 0.5 * shuntNegYDist;
 
 		    if (this.pc.onGround || this.pc.onEntity) {
 			that.finalOnEntity = true;
